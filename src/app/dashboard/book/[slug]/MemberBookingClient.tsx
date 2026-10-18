@@ -34,7 +34,7 @@ export default function MemberBookingClient({ slug }: { slug: string }) {
     setSubmitting(false); if (insertError) return setError(insertError.message); router.push('/dashboard/bookings?created=1'); router.refresh();
   }
 
-  return <DashboardShell role="member" userName={profile?.full_name || 'Demo Rider'} userEmail={profile?.email || 'preview@riderhorse.id'} canAccessAdmin={profile?.role === 'admin'}>
+  return <DashboardShell role="member" userName={profile?.full_name || 'Demo Rider'} userEmail={profile?.email || 'preview@riderhorse.id'}>
     {!trip ? <div className="rounded-3xl bg-white p-10 text-center"><h1 className="font-display text-3xl font-bold">Trip tidak ditemukan.</h1><Link href="/dashboard/trips" className="btn-primary mt-6">Kembali ke katalog</Link></div> : <>
       <Link href={`/dashboard/trips/${slug}`} className="mb-5 inline-flex items-center gap-2 text-xs font-bold text-brand-600"><ArrowLeft className="h-4 w-4" />Kembali ke detail trip</Link>
       <div className="grid overflow-hidden rounded-[1.75rem] border border-brand-900/8 bg-white xl:grid-cols-[.82fr_1.18fr]">

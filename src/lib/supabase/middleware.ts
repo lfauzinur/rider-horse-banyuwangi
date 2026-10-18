@@ -24,6 +24,12 @@ export async function updateSession(request: NextRequest) {
       url.pathname = '/dashboard';
       return NextResponse.redirect(url);
     }
+    if (isMemberRoute && previewRole === 'admin') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/admin';
+      url.search = '';
+      return NextResponse.redirect(url);
+    }
     return NextResponse.next({ request });
   }
 
@@ -68,6 +74,28 @@ export async function updateSession(request: NextRequest) {
     url.pathname = '/login';
     url.searchParams.set('next', `${pathname}${request.nextUrl.search}`);
     return NextResponse.redirect(url);
+  }
+
+  if (user && (isMemberRoute || isAdminRoute)) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profile?.role === 'admin' && isMemberRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/admin';
+      url.search = '';
+      return NextResponse.redirect(url);
+    }
+
+    if (profile?.role === 'member' && isAdminRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/dashboard';
+      url.search = '';
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;

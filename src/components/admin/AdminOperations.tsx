@@ -15,7 +15,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="block"><span className="form-label">{label}</span>{children}</label>; }
 
-export default function AdminOperations({ view, trips, services, onBookingsChange }: { view: View; trips: Trip[]; services: ManagedService[]; onBookingsChange?: (items: Booking[]) => void }) {
+export default function AdminOperations({ view, trips, services, onBookingsChange, onMembersChange }: { view: View; trips: Trip[]; services: ManagedService[]; onBookingsChange?: (items: Booking[]) => void; onMembersChange?: (count: number) => void }) {
   const [members, setMembers] = useState<OperationalMember[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [payments, setPayments] = useState<PaymentTransaction[]>([]);
@@ -28,7 +28,7 @@ export default function AdminOperations({ view, trips, services, onBookingsChang
   const [period, setPeriod] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
   const [notice, setNotice] = useState('');
 
-  const reload = useCallback(async () => { try { const snapshot = await loadOperationsData(); setMembers(snapshot.members); setBookings(snapshot.bookings); setPayments(snapshot.payments); setReferrals(snapshot.referrals); setFeedback(snapshot.feedback); onBookingsChange?.(snapshot.bookings); } catch (loadError) { setNotice(loadError instanceof Error ? loadError.message : 'Gagal memuat data operasional.'); } }, [onBookingsChange]);
+  const reload = useCallback(async () => { try { const snapshot = await loadOperationsData(); setMembers(snapshot.members); setBookings(snapshot.bookings); setPayments(snapshot.payments); setReferrals(snapshot.referrals); setFeedback(snapshot.feedback); onBookingsChange?.(snapshot.bookings); onMembersChange?.(snapshot.members.length); } catch (loadError) { setNotice(loadError instanceof Error ? loadError.message : 'Gagal memuat data operasional.'); } }, [onBookingsChange, onMembersChange]);
   useEffect(() => { const timer = window.setTimeout(() => void reload(), 0); const handleUpdate = () => void reload(); window.addEventListener(OPERATIONS_EVENT, handleUpdate); window.addEventListener('rider-bookings-updated', handleUpdate); return () => { window.clearTimeout(timer); window.removeEventListener(OPERATIONS_EVENT, handleUpdate); window.removeEventListener('rider-bookings-updated', handleUpdate); }; }, [reload]);
   function flash(message: string) { setNotice(message); window.setTimeout(() => setNotice(''), 2300); }
 

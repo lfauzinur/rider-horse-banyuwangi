@@ -12,8 +12,8 @@ import { getEditableContentDefaults } from '@/lib/content-defaults';
 import { createClient } from '@/lib/supabase/client';
 import { mockTrips } from '@/lib/mock-data';
 import { seededArticles } from '@/lib/article-data';
-import { formatCurrency } from '@/lib/utils';
-import { readBookings } from '@/lib/operations';
+import { formatCurrency, formatDate } from '@/lib/utils';
+import { readBookings, readMembers } from '@/lib/operations';
 import type { Article, Booking, Trip } from '@/types';
 
 type AdminTab = 'overview' | 'content' | 'trips' | 'services' | 'testimonials' | 'articles' | 'members' | 'bookings' | 'finance' | 'referrals' | 'feedback';
@@ -63,6 +63,7 @@ export default function AdminDashboardClient() {
   const [testimonials, setTestimonials] = useState<ManagedTestimonial[]>(catalog.testimonials);
   const [articles, setArticles] = useState<Article[]>(catalog.articles);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [memberCount, setMemberCount] = useState(0);
   const [content, setContent] = useState<Record<string, string>>(getEditableContentDefaults());
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
   const [editingService, setEditingService] = useState<ManagedService | null>(null);
@@ -85,6 +86,7 @@ export default function AdminDashboardClient() {
           }
           if (localContent) setContent({ ...getEditableContentDefaults(), ...JSON.parse(localContent) });
           setBookings(readBookings());
+          setMemberCount(readMembers().length);
         } catch {
           // Bundled defaults remain available.
         }
@@ -92,13 +94,14 @@ export default function AdminDashboardClient() {
       }
 
       const supabase = createClient();
-      const [tripRows, serviceRows, testimonialRows, articleRows, bookingRows, contentRows] = await Promise.all([
+      const [tripRows, serviceRows, testimonialRows, articleRows, bookingRows, contentRows, memberRows] = await Promise.all([
         supabase.from('trips').select('*').order('created_at'),
         supabase.from('services').select('*').order('sort_order'),
         supabase.from('testimonials').select('*').order('sort_order'),
         supabase.from('articles').select('*').order('published_at', { ascending: false }),
         supabase.from('bookings').select('*, trip:trips(*)').order('created_at', { ascending: false }),
         supabase.from('site_content').select('*'),
+        supabase.from('member_directory').select('id', { count: 'exact', head: true }),
       ]);
       if (tripRows.data?.length) setTrips(tripRows.data as Trip[]);
       if (serviceRows.data?.length) setServices(serviceRows.data.map(mapServiceRow));
@@ -106,6 +109,7 @@ export default function AdminDashboardClient() {
       if (articleRows.data?.length) setArticles(articleRows.data as Article[]);
       if (bookingRows.data) setBookings(bookingRows.data as Booking[]);
       if (contentRows.data) setContent({ ...getEditableContentDefaults(), ...Object.fromEntries(contentRows.data.map((item) => [item.key, item.value])) });
+      if (memberRows.count !== null) setMemberCount(memberRows.count);
     }
     void load();
   }, [configured]);
@@ -249,7 +253,7 @@ export default function AdminDashboardClient() {
 
   if (loading) return <div className="min-h-screen animate-pulse bg-[#f2f0e8]" />;
 
-  const revenue = bookings.filter((booking) => booking.status !== 'cancelled').reduce((sum, booking) => sum + booking.total_price, 0);
+  const revenue = bookings.filter((booking) => booking.status !== 'cancelled').reduce((sum, booking) => sum + Number(booking.paid_amount || 0), 0);
   const tabs: { key: AdminTab; label: string; icon: typeof Gauge }[] = [
     { key: 'overview', label: 'Ringkasan', icon: Gauge }, { key: 'content', label: 'Konten', icon: BookOpenText },
     { key: 'trips', label: 'Trip', icon: LayoutGrid }, { key: 'services', label: 'Layanan', icon: Settings2 },
@@ -262,13 +266,12 @@ export default function AdminDashboardClient() {
   return (
     <DashboardShell role="admin" userName={profile?.full_name || 'Admin Preview'} userEmail={profile?.email || 'admin@riderhorse.id'}>
       {notice && <div role="status" className="fixed right-5 top-20 z-[120] rounded-xl bg-brand-950 px-4 py-3 text-xs font-bold text-white shadow-xl">{notice}</div>}
-      {!configured && <div className="mb-6 rounded-2xl border border-accent-500/30 bg-accent-100/55 p-4 text-xs leading-6 text-brand-800"><strong>Mode preview lokal:</strong> perubahan CRUD disimpan di browser. Hubungkan Supabase untuk sinkronisasi produksi dan kontrol akses admin.</div>}
 
       <div className="flex gap-2 overflow-x-auto pb-2">
         {tabs.map(({ key, label, icon: Icon }) => <button key={key} type="button" onClick={() => setTab(key)} className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-xs font-bold ${tab === key ? 'bg-brand-950 text-white' : 'border border-brand-900/10 bg-white text-brand-700'}`}><Icon className="h-3.5 w-3.5" />{label}</button>)}
       </div>
 
-      {tab === 'overview' && <Overview trips={trips} services={services} testimonials={testimonials} articles={articles} bookings={bookings} revenue={revenue} />}
+      {tab === 'overview' && <Overview memberCount={memberCount} articles={articles} bookings={bookings} revenue={revenue} onNavigate={setTab} />}
 
       {tab === 'content' && <LandingContentManager content={content} setContent={setContent} onSave={saveContent} />}
 
@@ -277,7 +280,7 @@ export default function AdminDashboardClient() {
       {tab === 'testimonials' && <ResourceSection title="Testimoni Rider" subtitle="Kelola social proof dan rating yang tampil di website." onAdd={() => setEditingTestimonial({ ...emptyTestimonial })}>{testimonials.map((item) => <ResourceCard key={item.id} title={item.name} meta={`${item.location} • ${item.rating}/5 • ${item.trip}`} active={item.is_active} onEdit={() => setEditingTestimonial({ ...item })} onDelete={() => void deleteTestimonial(item.id)} />)}</ResourceSection>}
       {tab === 'articles' && <ResourceSection title="Artikel & Rider Journal" subtitle="Tulis, simpan sebagai draft, dan publikasikan artikel untuk visitor serta member." onAdd={() => setEditingArticle({ ...emptyArticle })}>{articles.map((article) => <ResourceCard key={article.id} title={article.title} meta={`${article.author} • ${article.published_at || 'Belum dijadwalkan'}`} active={article.is_published} onEdit={() => setEditingArticle({ ...article })} onDelete={() => void deleteArticle(article.id)} />)}</ResourceSection>}
 
-      {(['members', 'bookings', 'finance', 'referrals', 'feedback'] as AdminTab[]).includes(tab) && <AdminOperations view={tab as 'members' | 'bookings' | 'finance' | 'referrals' | 'feedback'} trips={trips} services={services} onBookingsChange={setBookings} />}
+      {(['members', 'bookings', 'finance', 'referrals', 'feedback'] as AdminTab[]).includes(tab) && <AdminOperations view={tab as 'members' | 'bookings' | 'finance' | 'referrals' | 'feedback'} trips={trips} services={services} onBookingsChange={setBookings} onMembersChange={setMemberCount} />}
 
       {editingTrip && <TripModal trip={editingTrip} setTrip={setEditingTrip} onClose={() => setEditingTrip(null)} onSave={saveTrip} />}
       {editingService && <ServiceModal service={editingService} setService={setEditingService} onClose={() => setEditingService(null)} onSave={saveService} />}
@@ -287,15 +290,83 @@ export default function AdminDashboardClient() {
   );
 }
 
-function Overview({ trips, services, testimonials, articles, bookings, revenue }: { trips: Trip[]; services: ManagedService[]; testimonials: ManagedTestimonial[]; articles: Article[]; bookings: Booking[]; revenue: number }) {
+function Overview({ memberCount, articles, bookings, revenue, onNavigate }: { memberCount: number; articles: Article[]; bookings: Booking[]; revenue: number; onNavigate: (tab: AdminTab) => void }) {
+  const pendingBookings = bookings.filter((item) => item.status === 'pending').length;
+  const publishedArticles = articles.filter((item) => item.is_published).length;
   const stats = [
-    { label: 'Trip aktif', value: trips.filter((item) => item.is_active).length, icon: LayoutGrid },
-    { label: 'Total booking', value: bookings.length, icon: CalendarCheck2 },
-    { label: 'Konten layanan', value: services.length, icon: FilePenLine },
-    { label: 'Artikel terbit', value: articles.filter((item) => item.is_published).length, icon: Newspaper },
-    { label: 'Pendapatan', value: formatCurrency(revenue), icon: CircleDollarSign },
+    { label: 'Total member', value: memberCount, detail: 'Member terdaftar', icon: UsersRound },
+    { label: 'Total booking', value: bookings.length, detail: `${pendingBookings} menunggu konfirmasi`, icon: CalendarCheck2 },
+    { label: 'Total artikel', value: articles.length, detail: `${publishedArticles} sudah terbit`, icon: Newspaper },
+    { label: 'Pendapatan diterima', value: formatCurrency(revenue), detail: 'DP dan pelunasan tercatat', icon: CircleDollarSign },
   ];
-  return <><section className="mt-7 rounded-[1.75rem] bg-brand-950 p-6 text-white sm:p-8"><p className="text-[0.62rem] font-extrabold uppercase tracking-[0.16em] text-accent-300">Admin control center</p><h1 className="mt-3 font-display text-4xl font-bold">Semua operasional dalam satu ruang.</h1><p className="mt-4 max-w-2xl text-sm leading-7 text-white/52">Kelola landing page, inventori trip, artikel, testimoni, dan booking member tanpa menyentuh kode.</p></section><section className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">{stats.map(({ label, value, icon: Icon }) => <div key={label} className="rounded-2xl border border-brand-900/8 bg-white p-5"><Icon className="h-5 w-5 text-brand-600" /><p className="mt-5 text-2xl font-bold">{value}</p><p className="mt-1 text-xs text-neutral-500">{label}</p></div>)}</section><section className="mt-5 grid gap-5 lg:grid-cols-2"><div className="rounded-2xl border border-brand-900/8 bg-white p-6"><h2 className="font-display text-xl font-bold">Kesehatan konten</h2><div className="mt-5 space-y-4">{[['Trip tersedia', trips.length], ['Layanan aktif', services.filter((item) => item.is_active).length], ['Testimoni tayang', testimonials.filter((item) => item.is_active).length], ['Artikel terbit', articles.filter((item) => item.is_published).length]].map(([label, value]) => <div key={String(label)} className="flex items-center justify-between border-b border-neutral-100 pb-3 text-sm"><span className="text-neutral-500">{label}</span><strong>{value}</strong></div>)}</div></div><div className="rounded-2xl bg-accent-300 p-6 text-brand-950"><UsersRound className="h-6 w-6" /><h2 className="mt-5 font-display text-2xl font-bold">{bookings.filter((item) => item.status === 'pending').length} booking menunggu</h2><p className="mt-3 text-sm leading-6 text-brand-900/65">Periksa jadwal, kapasitas trip, lalu konfirmasi booking member dari tab Booking.</p></div></section></>;
+  const recentBookings = bookings.slice(0, 5);
+
+  return (
+    <>
+      <section className="mt-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-[0.62rem] font-extrabold uppercase tracking-[0.16em] text-brand-600">Admin overview</p>
+          <h1 className="mt-2 font-display text-3xl font-bold sm:text-4xl">Ringkasan bisnis hari ini.</h1>
+          <p className="mt-2 text-sm text-neutral-500">Pantau data utama Rider Horse tanpa masuk ke aplikasi member.</p>
+        </div>
+        <button type="button" onClick={() => onNavigate('finance')} className="btn-outline btn-sm">Lihat laporan transaksi</button>
+      </section>
+
+      <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {stats.map(({ label, value, detail, icon: Icon }) => (
+          <article key={label} className="rounded-2xl border border-brand-900/8 bg-white p-5 shadow-[0_14px_40px_rgba(10,38,28,0.04)]">
+            <div className="flex items-start justify-between gap-4">
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-100 text-brand-700"><Icon className="h-5 w-5" strokeWidth={1.8} /></span>
+              <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-[0.56rem] font-extrabold uppercase tracking-wider text-neutral-500">Live</span>
+            </div>
+            <p className="mt-5 text-2xl font-bold text-brand-950">{value}</p>
+            <p className="mt-1 text-sm font-semibold text-brand-900">{label}</p>
+            <p className="mt-1 text-[0.68rem] text-neutral-400">{detail}</p>
+          </article>
+        ))}
+      </section>
+
+      <section className="mt-6 grid gap-5 xl:grid-cols-[1.55fr_.65fr]">
+        <div className="overflow-hidden rounded-2xl border border-brand-900/8 bg-white">
+          <div className="flex items-center justify-between gap-4 border-b border-neutral-100 p-5 sm:p-6">
+            <div><h2 className="font-display text-xl font-bold">Booking terbaru</h2><p className="mt-1 text-xs text-neutral-500">Reservasi terbaru dari member dan admin.</p></div>
+            <button type="button" onClick={() => onNavigate('bookings')} className="text-xs font-extrabold text-brand-700">Lihat semua →</button>
+          </div>
+          {recentBookings.length === 0 ? (
+            <div className="p-8 text-center text-sm text-neutral-500">Belum ada booking. Data reservasi baru akan tampil di sini.</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[720px] text-left text-sm">
+                <thead className="bg-neutral-100 text-[0.58rem] font-extrabold uppercase tracking-wider text-neutral-500"><tr><th className="px-6 py-4">Member</th><th className="px-6 py-4">Trip</th><th className="px-6 py-4">Jadwal</th><th className="px-6 py-4">Total</th><th className="px-6 py-4">Status</th></tr></thead>
+                <tbody>
+                  {recentBookings.map((booking) => (
+                    <tr key={booking.id} className="border-t border-neutral-100">
+                      <td className="px-6 py-4"><strong className="block text-brand-950">{booking.customer_name || booking.user?.full_name || 'Member'}</strong><span className="mt-1 block text-[0.65rem] text-neutral-400">{booking.qr_code_token || booking.id.slice(0, 8)}</span></td>
+                      <td className="px-6 py-4 font-semibold">{booking.trip?.title || booking.trip_id}</td>
+                      <td className="px-6 py-4 text-neutral-500">{formatDate(booking.booking_date)}<span className="block text-xs">{booking.time_slot} WIB</span></td>
+                      <td className="px-6 py-4 font-bold">{formatCurrency(booking.total_price)}</td>
+                      <td className="px-6 py-4"><span className={`rounded-full px-2.5 py-1 text-[0.58rem] font-extrabold uppercase ${booking.status === 'confirmed' || booking.status === 'completed' ? 'bg-brand-100 text-brand-700' : booking.status === 'cancelled' ? 'bg-red-50 text-red-600' : 'bg-accent-100 text-brand-800'}`}>{booking.status}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <aside className="rounded-2xl bg-brand-950 p-6 text-white">
+          <p className="text-[0.62rem] font-extrabold uppercase tracking-[0.16em] text-accent-300">Akses cepat</p>
+          <h2 className="mt-3 font-display text-2xl font-bold">Kelola data utama.</h2>
+          <p className="mt-3 text-xs leading-6 text-white/52">Semua pengelolaan tetap berada di Admin Console, terpisah dari pengalaman member.</p>
+          <div className="mt-6 grid gap-2">
+            <button type="button" onClick={() => onNavigate('members')} className="flex items-center justify-between rounded-xl bg-white/8 px-4 py-3 text-left text-xs font-bold hover:bg-white/12"><span>Data member</span><span>{memberCount}</span></button>
+            <button type="button" onClick={() => onNavigate('bookings')} className="flex items-center justify-between rounded-xl bg-white/8 px-4 py-3 text-left text-xs font-bold hover:bg-white/12"><span>Booking menunggu</span><span>{pendingBookings}</span></button>
+            <button type="button" onClick={() => onNavigate('articles')} className="flex items-center justify-between rounded-xl bg-white/8 px-4 py-3 text-left text-xs font-bold hover:bg-white/12"><span>Artikel terbit</span><span>{publishedArticles}</span></button>
+          </div>
+        </aside>
+      </section>
+    </>
+  );
 }
 
 function ResourceSection({ title, subtitle, onAdd, children }: { title: string; subtitle: string; onAdd: () => void; children: ReactNode }) {

@@ -13,10 +13,9 @@ interface DashboardShellProps {
   role: 'member' | 'admin';
   userName: string;
   userEmail: string;
-  canAccessAdmin?: boolean;
 }
 
-export default function DashboardShell({ children, role, userName, userEmail, canAccessAdmin = false }: DashboardShellProps) {
+export default function DashboardShell({ children, role, userName, userEmail }: DashboardShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -38,10 +37,8 @@ export default function DashboardShell({ children, role, userName, userEmail, ca
   const items = role === 'admin'
     ? [
         { href: '/admin', label: 'Admin Dashboard', icon: ShieldCheck },
-        { href: '/dashboard', label: 'Member Preview', icon: LayoutDashboard },
       ]
     : [
-        ...(canAccessAdmin ? [{ href: '/admin', label: 'Kembali ke Admin', icon: ShieldCheck }] : []),
         { href: '/dashboard', label: 'Beranda', icon: LayoutDashboard },
         { href: '/dashboard/trips', label: 'Pilih Trip', icon: Trees },
         { href: '/dashboard/services', label: 'Pilih Layanan', icon: BriefcaseBusiness },

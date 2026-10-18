@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowUpRight, CalendarCheck2, CheckCircle2, Clock3, CloudOff, Compass, Download, MapPin, ReceiptText, ShieldCheck, Smartphone, Sparkles, Wifi } from 'lucide-react';
+import { ArrowUpRight, CalendarCheck2, CheckCircle2, Clock3, CloudOff, Compass, Download, MapPin, ReceiptText, Smartphone, Sparkles, Wifi } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import DashboardShell from '@/components/app/DashboardShell';
 import { useAuth } from '@/lib/use-auth';
@@ -98,13 +98,7 @@ export default function MemberDashboardClient() {
   const displayEmail = profile?.email || 'preview@riderhorse.id';
 
   return (
-    <DashboardShell role="member" userName={displayName} userEmail={displayEmail} canAccessAdmin={profile?.role === 'admin'}>
-      {profile?.role === 'admin' && (
-        <div className="mb-5 flex flex-col gap-3 rounded-2xl border border-brand-900/10 bg-white p-4 text-xs sm:flex-row sm:items-center sm:justify-between">
-          <span className="flex items-center gap-2 font-semibold text-brand-800"><ShieldCheck className="h-4 w-4 text-accent-600" />Anda sedang melihat aplikasi sebagai member.</span>
-          <Link href="/admin" className="font-extrabold text-brand-700">Kembali ke Admin Console →</Link>
-        </div>
-      )}
+    <DashboardShell role="member" userName={displayName} userEmail={displayEmail}>
       {!configured && (
         <div className="mb-6 rounded-2xl border border-accent-500/30 bg-accent-100/55 p-4 text-xs leading-6 text-brand-800">
           <strong>Mode preview:</strong> hubungkan Supabase untuk mengaktifkan akun, sinkronisasi booking, dan akses lintas perangkat.

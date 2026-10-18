@@ -37,6 +37,11 @@ export function useAuth(requiredRole?: 'member' | 'admin') {
           setLoading(false);
           return;
         }
+        if (requiredRole === 'member' && role === 'admin') {
+          router.replace('/admin');
+          setLoading(false);
+          return;
+        }
         const account = previewAccounts[role];
         setProfile({
           id: `preview-${role}`,
@@ -76,6 +81,11 @@ export function useAuth(requiredRole?: 'member' | 'admin') {
 
       if (requiredRole === 'admin' && resolvedProfile.role !== 'admin') {
         router.replace('/dashboard');
+        setLoading(false);
+        return;
+      }
+      if (requiredRole === 'member' && resolvedProfile.role === 'admin') {
+        router.replace('/admin');
         setLoading(false);
         return;
       }

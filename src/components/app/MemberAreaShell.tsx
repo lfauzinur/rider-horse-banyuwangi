@@ -14,7 +14,6 @@ export default function MemberAreaShell({ children }: { children: ReactNode }) {
       role="member"
       userName={profile?.full_name || 'Demo Rider'}
       userEmail={profile?.email || 'preview@riderhorse.id'}
-      canAccessAdmin={profile?.role === 'admin'}
     >
       {children}
     </DashboardShell>
