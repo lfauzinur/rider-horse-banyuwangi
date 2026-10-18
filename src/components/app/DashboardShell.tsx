@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Bell, BookOpenText, BriefcaseBusiness, CalendarCheck2, CloudOff, HandCoins, LayoutDashboard, LogOut, Menu, MessageSquareText, Settings2, ShieldCheck, Trees, UserRound, Wifi, X } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { isSupabaseConfigured } from '@/lib/supabase/config';
 import { PREVIEW_AUTH_COOKIE, PREVIEW_AUTH_STORAGE } from '@/lib/preview-auth';
@@ -13,9 +14,12 @@ interface DashboardShellProps {
   role: 'member' | 'admin';
   userName: string;
   userEmail: string;
+  adminSections?: { key: string; label: string; icon: LucideIcon }[];
+  activeAdminSection?: string;
+  onAdminSectionChange?: (key: string) => void;
 }
 
-export default function DashboardShell({ children, role, userName, userEmail }: DashboardShellProps) {
+export default function DashboardShell({ children, role, userName, userEmail, adminSections = [], activeAdminSection, onAdminSectionChange }: DashboardShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -70,9 +74,11 @@ export default function DashboardShell({ children, role, userName, userEmail }: 
         </span>
       </Link>
 
-      <nav className="mt-8 space-y-1" aria-label="Dashboard navigation">
+      <nav className="mt-6 min-h-0 flex-1 space-y-1 overflow-y-auto pr-1" aria-label="Dashboard navigation">
         {items.map(({ href, label, icon: Icon }) => {
-          const active = href === '/dashboard' ? pathname === href : pathname.startsWith(href);
+          const active = role === 'admin' && adminSections.length > 0
+            ? false
+            : href === '/dashboard' ? pathname === href : pathname.startsWith(href);
           return (
             <Link key={href} href={href} onClick={() => setMenuOpen(false)} className={`flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition-colors ${active ? 'bg-accent-400 text-brand-950' : 'text-white/62 hover:bg-white/5 hover:text-white'}`}>
               <Icon className="h-4 w-4" strokeWidth={1.7} />
@@ -80,9 +86,31 @@ export default function DashboardShell({ children, role, userName, userEmail }: 
             </Link>
           );
         })}
+
+        {role === 'admin' && adminSections.length > 0 && (
+          <div className="mt-2 space-y-1 border-t border-white/10 pt-3">
+            {adminSections.map(({ key, label, icon: Icon }) => {
+              const active = activeAdminSection === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => {
+                    onAdminSectionChange?.(key);
+                    setMenuOpen(false);
+                  }}
+                  className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-left text-sm font-semibold transition-colors ${active ? 'bg-accent-400 text-brand-950' : 'text-white/62 hover:bg-white/5 hover:text-white'}`}
+                >
+                  <Icon className="h-4 w-4 shrink-0" strokeWidth={1.7} />
+                  <span>{label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </nav>
 
-      <div className="mt-auto rounded-2xl border border-white/10 bg-white/5 p-4">
+      <div className="mt-5 shrink-0 rounded-2xl border border-white/10 bg-white/5 p-4">
         <div className="flex items-center gap-2 text-[0.62rem] font-bold uppercase tracking-[0.12em] text-white/45">
           {online ? <Wifi className="h-3.5 w-3.5 text-accent-300" /> : <CloudOff className="h-3.5 w-3.5 text-orange-300" />}
           {online ? 'Online & tersinkron' : 'Mode offline'}

@@ -264,12 +264,15 @@ export default function AdminDashboardClient() {
   ];
 
   return (
-    <DashboardShell role="admin" userName={profile?.full_name || 'Admin Preview'} userEmail={profile?.email || 'admin@riderhorse.id'}>
+    <DashboardShell
+      role="admin"
+      userName={profile?.full_name || 'Admin Preview'}
+      userEmail={profile?.email || 'admin@riderhorse.id'}
+      adminSections={tabs}
+      activeAdminSection={tab}
+      onAdminSectionChange={(section) => setTab(section as AdminTab)}
+    >
       {notice && <div role="status" className="fixed right-5 top-20 z-[120] rounded-xl bg-brand-950 px-4 py-3 text-xs font-bold text-white shadow-xl">{notice}</div>}
-
-      <div className="flex gap-2 overflow-x-auto pb-2">
-        {tabs.map(({ key, label, icon: Icon }) => <button key={key} type="button" onClick={() => setTab(key)} className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-xs font-bold ${tab === key ? 'bg-brand-950 text-white' : 'border border-brand-900/10 bg-white text-brand-700'}`}><Icon className="h-3.5 w-3.5" />{label}</button>)}
-      </div>
 
       {tab === 'overview' && <Overview memberCount={memberCount} articles={articles} bookings={bookings} revenue={revenue} onNavigate={setTab} />}
 
@@ -370,7 +373,7 @@ function Overview({ memberCount, articles, bookings, revenue, onNavigate }: { me
 }
 
 function ResourceSection({ title, subtitle, onAdd, children }: { title: string; subtitle: string; onAdd: () => void; children: ReactNode }) {
-  return <section className="mt-7 rounded-[1.5rem] border border-brand-900/8 bg-white p-5 sm:p-7"><div className="flex items-end justify-between gap-4"><div><h1 className="font-display text-3xl font-bold">{title}</h1><p className="mt-2 text-sm text-neutral-500">{subtitle}</p></div><button type="button" onClick={onAdd} className="btn-primary btn-sm"><Plus className="h-4 w-4" />Tambah</button></div><div className="mt-7 grid gap-3">{children}</div></section>;
+  return <section className="mt-7 rounded-[1.5rem] border border-brand-900/8 bg-white p-5 sm:p-7"><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div className="min-w-0"><h1 className="font-display text-3xl font-bold">{title}</h1><p className="mt-2 text-sm text-neutral-500">{subtitle}</p></div><button type="button" onClick={onAdd} className="btn-primary btn-sm self-start sm:self-auto"><Plus className="h-4 w-4" />Tambah</button></div><div className="mt-7 grid grid-cols-1 gap-3">{children}</div></section>;
 }
 
 function ResourceCard({ title, meta, active, onEdit, onDelete }: { title: string; meta: string; active: boolean; onEdit: () => void; onDelete: () => void }) {
