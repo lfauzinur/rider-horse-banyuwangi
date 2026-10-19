@@ -39,7 +39,7 @@ export default function ArticleDetailClient({ slug }: { slug: string }) {
               <p className="mt-10 text-[0.64rem] font-extrabold uppercase tracking-[0.16em] text-accent-300">Rider Journal</p>
               <h1 className="mt-4 max-w-4xl font-display text-4xl font-bold leading-[1.06] sm:text-6xl">{localizedArticle.title}</h1>
               <p className="mt-6 max-w-2xl text-base leading-8 text-white/58">{localizedArticle.excerpt}</p>
-              <div className="mt-7 flex flex-wrap gap-5 text-xs text-white/48"><span className="flex items-center gap-2"><UserRound className="h-4 w-4 text-accent-300" />{article.author}</span><span className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-accent-300" />{displayDate(article.published_at, locale)}</span></div>
+              <div className="mt-7 flex flex-wrap gap-5 text-xs text-white/48"><span className="flex items-center gap-2"><UserRound className="h-4 w-4 text-accent-300" />{localizedArticle.author}</span><span className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-accent-300" />{displayDate(article.published_at, locale)}</span></div>
             </div>
           </header>
 

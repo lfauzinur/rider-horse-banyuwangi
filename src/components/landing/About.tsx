@@ -16,13 +16,13 @@ export default function About() {
       <div className="container-main grid items-center gap-14 lg:grid-cols-[1.06fr_.94fr] lg:gap-20">
         <div className="relative grid h-[430px] grid-cols-[1.18fr_.82fr] grid-rows-2 gap-3 sm:h-[570px] sm:gap-4">
           <div className="relative row-span-2 overflow-hidden rounded-[1.75rem]">
-            <Image src={siteContent['global.about_primary_image_url'] || '/images/private-lesson.jpg'} alt="Instruktur mendampingi sesi berkuda" fill sizes="(max-width: 1024px) 60vw, 34vw" className="object-cover" />
+            <Image src={siteContent['global.about_primary_image_url'] || '/images/private-lesson.jpg'} alt={locale === 'id' ? 'Instruktur mendampingi sesi berkuda' : 'An instructor assisting a riding session'} fill sizes="(max-width: 1024px) 60vw, 34vw" className="object-cover" />
           </div>
           <div className="relative overflow-hidden rounded-[1.75rem]">
-            <Image src={siteContent['global.about_secondary_image_url'] || '/images/group-class.jpg'} alt="Kelas berkuda yang ramah untuk pemula" fill sizes="(max-width: 1024px) 40vw, 20vw" className="object-cover" />
+            <Image src={siteContent['global.about_secondary_image_url'] || '/images/group-class.jpg'} alt={locale === 'id' ? 'Kelas berkuda yang ramah untuk pemula' : 'A beginner-friendly riding class'} fill sizes="(max-width: 1024px) 40vw, 20vw" className="object-cover" />
           </div>
           <div className="relative overflow-hidden rounded-[1.75rem]">
-            <Image src={siteContent['global.about_tertiary_image_url'] || '/images/forest-trail.jpg'} alt="Petualangan berkuda di jalur hijau" fill sizes="(max-width: 1024px) 40vw, 20vw" className="object-cover" />
+            <Image src={siteContent['global.about_tertiary_image_url'] || '/images/forest-trail.jpg'} alt={locale === 'id' ? 'Petualangan berkuda di jalur hijau' : 'A horseback adventure along a green trail'} fill sizes="(max-width: 1024px) 40vw, 20vw" className="object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-brand-950/70 to-transparent" />
           </div>
 

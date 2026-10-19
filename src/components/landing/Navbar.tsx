@@ -28,7 +28,7 @@ export default function Navbar() {
 
   return (
     <nav
-      aria-label="Navigasi utama"
+      aria-label={locale === 'id' ? 'Navigasi utama' : 'Main navigation'}
       className={`sticky top-0 z-50 border-b transition-all duration-300 ${
         isScrolled
           ? 'border-white/10 bg-brand-950/95 shadow-[0_12px_40px_rgba(6,18,14,.18)] backdrop-blur-xl'
@@ -86,7 +86,7 @@ export default function Navbar() {
             className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white lg:hidden"
             aria-expanded={isMobileOpen}
             aria-controls="mobile-navigation"
-            aria-label={isMobileOpen ? 'Tutup menu' : 'Buka menu'}
+            aria-label={isMobileOpen ? (locale === 'id' ? 'Tutup menu' : 'Close menu') : (locale === 'id' ? 'Buka menu' : 'Open menu')}
           >
             {isMobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>

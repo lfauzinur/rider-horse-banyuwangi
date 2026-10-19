@@ -13,8 +13,8 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
-export function formatDate(dateString: string): string {
-  return new Intl.DateTimeFormat('id-ID', {
+export function formatDate(dateString: string, locale: 'id' | 'en' = 'id'): string {
+  return new Intl.DateTimeFormat(locale === 'id' ? 'id-ID' : 'en-GB', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',

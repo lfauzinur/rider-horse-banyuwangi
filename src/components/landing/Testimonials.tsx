@@ -24,13 +24,13 @@ export default function Testimonials() {
           <p className="section-copy mt-6 max-w-md">{t.testimonials.description}</p>
 
           <div className="relative mt-9 h-[360px] overflow-hidden rounded-[1.75rem] sm:h-[430px]">
-            <Image src={siteContent['global.testimonials_image_url'] || '/images/beach-ride.jpg'} alt="Rider menikmati perjalanan berkuda di Banyuwangi" fill sizes="(max-width: 1023px) 100vw, 40vw" className="object-cover" />
+            <Image src={siteContent['global.testimonials_image_url'] || '/images/beach-ride.jpg'} alt={locale === 'id' ? 'Rider menikmati perjalanan berkuda di Banyuwangi' : 'A rider enjoying a horseback journey in Banyuwangi'} fill sizes="(max-width: 1023px) 100vw, 40vw" className="object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-brand-950/65 via-transparent to-transparent" />
             <div className="absolute bottom-5 left-5 right-5 rounded-2xl border border-white/20 bg-brand-950/45 p-4 text-white backdrop-blur-md">
               <p className="text-[0.62rem] font-extrabold uppercase tracking-[0.17em] text-accent-300">Google Reviews</p>
               <div className="mt-2 flex items-center gap-3">
                 <span className="font-display text-3xl font-bold">4.9</span>
-                <div className="flex gap-1" aria-label="4.9 dari 5 bintang">
+                <div className="flex gap-1" aria-label={locale === 'id' ? '4,9 dari 5 bintang' : '4.9 out of 5 stars'}>
                   {Array.from({ length: 5 }).map((_, index) => <Star key={index} className="h-3.5 w-3.5 fill-accent-300 text-accent-300" />)}
                 </div>
               </div>

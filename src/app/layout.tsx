@@ -32,8 +32,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       data-scroll-behavior="smooth"
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col">
-        <GlobalPageLoader />
         <LanguageProvider>
+          <GlobalPageLoader />
           <CatalogProvider>
             {children}
             <PWARegistration />

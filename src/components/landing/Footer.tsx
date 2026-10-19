@@ -5,6 +5,7 @@ import { Mail, MessageCircle, Phone, Trees } from 'lucide-react';
 import { defaultSiteContent } from '@/lib/mock-data';
 import { useLanguage } from '@/lib/i18n/context';
 import { useCatalog } from '@/lib/catalog-context';
+import { localizeTrip } from '@/lib/localized-content';
 
 export default function Footer() {
   const { t, locale, siteContent } = useLanguage();
@@ -12,6 +13,7 @@ export default function Footer() {
   const content = (key: string) => siteContent[`global.${key}`] || defaultSiteContent[key];
   const phone = content('contact_phone');
   const email = content('contact_email');
+  const address = locale === 'en' ? content('contact_address_en') : content('contact_address');
   const exploreLinks = [
     { label: t.nav.home, href: '/#home' },
     { label: t.nav.about, href: '/#about' },
@@ -37,7 +39,7 @@ export default function Footer() {
               {[
                 { Icon: MessageCircle, href: `https://wa.me/${content('whatsapp_number')}`, label: 'WhatsApp' },
                 { Icon: Mail, href: `mailto:${email}`, label: 'Email' },
-                { Icon: Phone, href: `tel:${phone.replace(/\s/g, '')}`, label: 'Telepon' },
+                { Icon: Phone, href: `tel:${phone.replace(/\s/g, '')}`, label: locale === 'id' ? 'Telepon' : 'Phone' },
               ].map(({ Icon, href, label }) => (
                 <a key={label} href={href} target={href.startsWith('http') ? '_blank' : undefined} rel={href.startsWith('http') ? 'noopener noreferrer' : undefined} aria-label={label} className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-white/55 transition-colors hover:border-accent-300/50 hover:text-accent-300">
                   <Icon className="h-4 w-4" strokeWidth={1.7} />
@@ -56,14 +58,14 @@ export default function Footer() {
           <div>
             <h3 className="text-[0.64rem] font-extrabold uppercase tracking-[0.17em] text-white/35">{t.footer.ourTrips}</h3>
             <ul className="mt-5 space-y-3">
-              {trips.slice(0, 4).map((trip) => <li key={trip.id}><Link href={`/trips/${trip.slug}`} className="text-xs text-white/62 transition-colors hover:text-accent-300">{trip.title}</Link></li>)}
+              {trips.slice(0, 4).map((trip) => <li key={trip.id}><Link href={`/trips/${trip.slug}`} className="text-xs text-white/62 transition-colors hover:text-accent-300">{localizeTrip(trip, locale).title}</Link></li>)}
             </ul>
           </div>
 
           <div>
             <h3 className="text-[0.64rem] font-extrabold uppercase tracking-[0.17em] text-white/35">{t.footer.contact}</h3>
             <address className="mt-5 space-y-3 text-xs not-italic leading-6 text-white/62">
-              <p>{content('contact_address')}</p>
+              <p>{address}</p>
               <a href={`tel:${phone.replace(/\s/g, '')}`} className="block hover:text-accent-300">{phone}</a>
               <a href={`mailto:${email}`} className="block break-all hover:text-accent-300">{email}</a>
             </address>

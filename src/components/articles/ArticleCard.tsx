@@ -36,7 +36,7 @@ export default function ArticleCard({ article, featured = false, basePath = '/ar
       <div className={`flex flex-col ${featured ? 'justify-center p-7 sm:p-10' : 'p-5'}`}>
         <div className="flex flex-wrap items-center gap-3 text-[0.64rem] font-bold uppercase tracking-[0.12em] text-neutral-500">
           <span className="flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5 text-brand-600" />{articleDate(article.published_at, locale)}</span>
-          <span>{article.author}</span>
+          <span>{localizedArticle.author}</span>
         </div>
         <h3 className={`mt-4 font-display font-bold leading-tight text-brand-950 ${featured ? 'text-3xl sm:text-4xl' : 'text-2xl'}`}>
           <Link href={href} className="transition-colors hover:text-brand-600">{localizedArticle.title}</Link>

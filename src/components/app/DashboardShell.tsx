@@ -9,6 +9,7 @@ import NotificationMenu from '@/components/app/NotificationMenu';
 import { createClient } from '@/lib/supabase/client';
 import { isSupabaseConfigured } from '@/lib/supabase/config';
 import { PREVIEW_AUTH_COOKIE, PREVIEW_AUTH_STORAGE } from '@/lib/preview-auth';
+import { useLanguage } from '@/lib/i18n/context';
 
 interface DashboardShellProps {
   children: ReactNode;
@@ -21,6 +22,8 @@ interface DashboardShellProps {
 }
 
 export default function DashboardShell({ children, role, userName, userEmail, adminSections = [], activeAdminSection, onAdminSectionChange }: DashboardShellProps) {
+  const { locale, setLocale } = useLanguage();
+  const l = (id: string, en: string) => locale === 'id' ? id : en;
   const pathname = usePathname();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -44,14 +47,14 @@ export default function DashboardShell({ children, role, userName, userEmail, ad
         { href: '/admin', label: 'Admin Dashboard', icon: ShieldCheck },
       ]
     : [
-        { href: '/dashboard', label: 'Beranda', icon: LayoutDashboard },
-        { href: '/dashboard/trips', label: 'Pilih Trip', icon: Trees },
-        { href: '/dashboard/services', label: 'Pilih Layanan', icon: BriefcaseBusiness },
-        { href: '/dashboard/bookings', label: 'Booking Saya', icon: CalendarCheck2 },
-        { href: '/dashboard/articles', label: 'Baca Artikel', icon: BookOpenText },
-        { href: '/dashboard/referrals', label: 'Referral & Penghasilan', icon: HandCoins },
-        { href: '/dashboard/feedback', label: 'Testimoni & Saran', icon: MessageSquareText },
-        { href: '/dashboard/profile', label: 'Profil & Keamanan', icon: UserRound },
+        { href: '/dashboard', label: l('Beranda', 'Home'), icon: LayoutDashboard },
+        { href: '/dashboard/trips', label: l('Pilih Trip', 'Choose a Trip'), icon: Trees },
+        { href: '/dashboard/services', label: l('Pilih Layanan', 'Choose a Service'), icon: BriefcaseBusiness },
+        { href: '/dashboard/bookings', label: l('Booking Saya', 'My Bookings'), icon: CalendarCheck2 },
+        { href: '/dashboard/articles', label: l('Baca Artikel', 'Read Articles'), icon: BookOpenText },
+        { href: '/dashboard/referrals', label: l('Referral & Penghasilan', 'Referrals & Earnings'), icon: HandCoins },
+        { href: '/dashboard/feedback', label: l('Testimoni & Saran', 'Reviews & Feedback'), icon: MessageSquareText },
+        { href: '/dashboard/profile', label: l('Profil & Keamanan', 'Profile & Security'), icon: UserRound },
       ];
 
   async function signOut() {
@@ -114,12 +117,12 @@ export default function DashboardShell({ children, role, userName, userEmail, ad
       <div className="mt-5 shrink-0 rounded-2xl border border-white/10 bg-white/5 p-4">
         <div className="flex items-center gap-2 text-[0.62rem] font-bold uppercase tracking-[0.12em] text-white/45">
           {online ? <Wifi className="h-3.5 w-3.5 text-accent-300" /> : <CloudOff className="h-3.5 w-3.5 text-orange-300" />}
-          {online ? 'Online & tersinkron' : 'Mode offline'}
+          {online ? l('Online & tersinkron', 'Online & synced') : l('Mode offline', 'Offline mode')}
         </div>
         <p className="mt-4 truncate text-sm font-bold text-white">{userName}</p>
         <p className="truncate text-[0.68rem] text-white/42">{userEmail}</p>
         <button type="button" onClick={signOut} className="mt-4 flex items-center gap-2 text-xs font-bold text-white/55 hover:text-white">
-          <LogOut className="h-3.5 w-3.5" /> Keluar
+          <LogOut className="h-3.5 w-3.5" /> {l('Keluar', 'Sign out')}
         </button>
       </div>
     </div>
@@ -128,35 +131,50 @@ export default function DashboardShell({ children, role, userName, userEmail, ad
   return (
     <div className="min-h-screen bg-[#f2f0e8] text-brand-950">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 bg-brand-950 p-5 lg:block">{sidebar}</aside>
-      {menuOpen && <button type="button" aria-label="Tutup menu" className="fixed inset-0 z-40 bg-black/45 lg:hidden" onClick={() => setMenuOpen(false)} />}
+      {menuOpen && <button type="button" aria-label={l('Tutup menu', 'Close menu')} className="fixed inset-0 z-40 bg-black/45 lg:hidden" onClick={() => setMenuOpen(false)} />}
       <aside className={`fixed inset-y-0 left-0 z-50 w-[86%] max-w-72 bg-brand-950 p-5 transition-transform lg:hidden ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}>{sidebar}</aside>
 
       <div className="lg:pl-72">
         <header className="sticky top-0 z-30 flex h-[72px] items-center justify-between border-b border-brand-900/10 bg-[#f8f6ef]/90 px-4 backdrop-blur-xl sm:px-7">
           <div className="flex items-center gap-3">
-            <button type="button" onClick={() => setMenuOpen((open) => !open)} className="flex h-10 w-10 items-center justify-center rounded-full border border-brand-900/10 lg:hidden" aria-label={menuOpen ? 'Tutup menu' : 'Buka menu'}>
+            <button type="button" onClick={() => setMenuOpen((open) => !open)} className="flex h-10 w-10 items-center justify-center rounded-full border border-brand-900/10 lg:hidden" aria-label={menuOpen ? l('Tutup menu', 'Close menu') : l('Buka menu', 'Open menu')}>
               {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
             <div>
               <p className="text-[0.6rem] font-extrabold uppercase tracking-[0.16em] text-brand-600">{role === 'admin' ? 'Operational workspace' : 'Your riding journey'}</p>
-              <p className="font-display text-lg font-bold">Halo, {userName.split(' ')[0]}</p>
+              <p className="font-display text-lg font-bold">{l('Halo', 'Hello')}, {userName.split(' ')[0]}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {role === 'member' && (
+              <div className="flex rounded-full border border-brand-900/10 bg-white p-1" aria-label={l('Pilihan bahasa', 'Language selection')}>
+                {(['id', 'en'] as const).map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => setLocale(item)}
+                    aria-pressed={locale === item}
+                    className={`rounded-full px-2.5 py-1.5 text-[0.6rem] font-extrabold uppercase transition-colors ${locale === item ? 'bg-brand-950 text-white' : 'text-neutral-500 hover:text-brand-800'}`}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+            )}
             <NotificationMenu role={role} />
-            {role === 'member' && <Link href="/dashboard/profile" className="hidden h-10 w-10 items-center justify-center rounded-full border border-brand-900/10 bg-white text-brand-700 sm:flex" aria-label="Pengaturan profil"><Settings2 className="h-4 w-4" /></Link>}
+            {role === 'member' && <Link href="/dashboard/profile" className="hidden h-10 w-10 items-center justify-center rounded-full border border-brand-900/10 bg-white text-brand-700 sm:flex" aria-label={l('Pengaturan profil', 'Profile settings')}><Settings2 className="h-4 w-4" /></Link>}
           </div>
         </header>
         <main className="p-4 pb-24 sm:p-7 sm:pb-24 lg:p-9">{children}</main>
       </div>
 
       {role === 'member' && (
-        <nav className="fixed inset-x-3 bottom-3 z-30 grid grid-cols-4 rounded-2xl border border-white/10 bg-brand-950/95 p-1.5 shadow-2xl backdrop-blur-xl lg:hidden" aria-label="Navigasi aplikasi member">
+        <nav className="fixed inset-x-3 bottom-3 z-30 grid grid-cols-4 rounded-2xl border border-white/10 bg-brand-950/95 p-1.5 shadow-2xl backdrop-blur-xl lg:hidden" aria-label={l('Navigasi aplikasi member', 'Member app navigation')}>
           {[
-            { href: '/dashboard', label: 'Beranda', icon: LayoutDashboard },
+            { href: '/dashboard', label: l('Beranda', 'Home'), icon: LayoutDashboard },
             { href: '/dashboard/trips', label: 'Trip', icon: Trees },
             { href: '/dashboard/bookings', label: 'Booking', icon: CalendarCheck2 },
-            { href: '/dashboard/profile', label: 'Profil', icon: UserRound },
+            { href: '/dashboard/profile', label: l('Profil', 'Profile'), icon: UserRound },
           ].map(({ href, label, icon: Icon }) => {
             const active = href === '/dashboard' ? pathname === href : pathname.startsWith(href);
             return <Link key={href} href={href} prefetch={false} className={`flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-2 text-[0.56rem] font-bold ${active ? 'bg-accent-400 text-brand-950' : 'text-white/58'}`}><Icon className="h-4 w-4" /><span className="max-w-full truncate">{label}</span></Link>;

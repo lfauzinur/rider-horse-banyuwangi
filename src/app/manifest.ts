@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Rider Horse Banyuwangi',
     short_name: 'Rider Horse',
-    description: 'Booking dan kelola perjalanan berkuda Rider Horse Banyuwangi.',
+    description: 'Book and manage your Rider Horse Banyuwangi riding journeys.',
     start_url: '/dashboard',
     display: 'standalone',
     background_color: '#f5f2e9',
@@ -15,9 +15,9 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ['travel', 'lifestyle'],
     shortcuts: [
       { name: 'Dashboard', short_name: 'Dashboard', url: '/dashboard', icons: [{ src: '/app-icon.svg', sizes: 'any', type: 'image/svg+xml' }] },
-      { name: 'Cari Trip', short_name: 'Trip', url: '/dashboard/trips', icons: [{ src: '/app-icon.svg', sizes: 'any', type: 'image/svg+xml' }] },
-      { name: 'Booking Saya', short_name: 'Booking', url: '/dashboard/bookings', icons: [{ src: '/app-icon.svg', sizes: 'any', type: 'image/svg+xml' }] },
-      { name: 'Baca Artikel', short_name: 'Artikel', url: '/dashboard/articles', icons: [{ src: '/app-icon.svg', sizes: 'any', type: 'image/svg+xml' }] },
+      { name: 'Browse Trips', short_name: 'Trips', url: '/dashboard/trips', icons: [{ src: '/app-icon.svg', sizes: 'any', type: 'image/svg+xml' }] },
+      { name: 'My Bookings', short_name: 'Bookings', url: '/dashboard/bookings', icons: [{ src: '/app-icon.svg', sizes: 'any', type: 'image/svg+xml' }] },
+      { name: 'Read Articles', short_name: 'Articles', url: '/dashboard/articles', icons: [{ src: '/app-icon.svg', sizes: 'any', type: 'image/svg+xml' }] },
     ],
     icons: [
       {

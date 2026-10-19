@@ -12,7 +12,7 @@ export default function Hero() {
     <section id="home" className="relative isolate min-h-[calc(100svh-72px)] overflow-hidden bg-brand-950 text-white">
       <Image
         src={siteContent['global.hero_image_url'] || '/images/hero-banner.png'}
-        alt="Rider menikmati pengalaman berkuda di alam Banyuwangi"
+        alt={locale === 'id' ? 'Rider menikmati pengalaman berkuda di alam Banyuwangi' : 'A rider enjoying a horseback experience in Banyuwangi'}
         fill
         priority
         sizes="100vw"

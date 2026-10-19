@@ -49,6 +49,13 @@ export default function LoginClient({ initialMode = 'login' }: { initialMode?: A
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage(null);
+    const normalizedEmail = email.trim().toLowerCase().normalize('NFKC');
+    setEmail(normalizedEmail);
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setMessage({ type: 'error', text: locale === 'id' ? 'Masukkan alamat email yang valid.' : 'Enter a valid email address.' });
+      return;
+    }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -63,7 +70,7 @@ export default function LoginClient({ initialMode = 'login' }: { initialMode?: A
         return;
       }
 
-      const account = findPreviewAccount(email, password);
+      const account = findPreviewAccount(normalizedEmail, password);
       if (!account) {
         setMessage({ type: 'error', text: locale === 'id' ? 'Email atau password demo tidak sesuai.' : 'Invalid demo email or password.' });
         return;
@@ -80,7 +87,7 @@ export default function LoginClient({ initialMode = 'login' }: { initialMode?: A
     const supabase = createClient();
 
     if (mode === 'reset') {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
         redirectTo: `${window.location.origin}/login`,
       });
       setIsLoading(false);
@@ -98,7 +105,7 @@ export default function LoginClient({ initialMode = 'login' }: { initialMode?: A
 
     if (mode === 'signup') {
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: normalizedEmail,
         password,
         options: {
           data: {
@@ -110,12 +117,15 @@ export default function LoginClient({ initialMode = 'login' }: { initialMode?: A
       setIsLoading(false);
       if (error) {
         const rateLimited = error.message.toLowerCase().includes('rate limit');
-        if (rateLimited) setUnconfirmedEmail(email);
+        if (rateLimited) setUnconfirmedEmail(normalizedEmail);
+        const invalidEmail = error.code === 'email_address_invalid' || error.message.toLowerCase().includes('email address') && error.message.toLowerCase().includes('invalid');
         setMessage({
           type: 'error',
           text: rateLimited
             ? (locale === 'id' ? 'Akunmu sudah tercatat, tetapi email konfirmasi belum terkirim karena batas email sementara. Tunggu sebentar lalu kirim ulang konfirmasi.' : 'Your account was recorded, but the confirmation email could not be sent because of a temporary email limit. Wait a moment, then resend it.')
-            : error.message,
+            : invalidEmail
+              ? (locale === 'id' ? 'Alamat email ini tidak dapat digunakan. Pastikan alamatnya aktif dan benar, atau gunakan email pribadi lain.' : 'This email address cannot be used. Make sure it is active and correct, or use another personal email address.')
+              : error.message,
         });
         return;
       }
@@ -125,16 +135,16 @@ export default function LoginClient({ initialMode = 'login' }: { initialMode?: A
         router.refresh();
         return;
       }
-      setUnconfirmedEmail(email);
+      setUnconfirmedEmail(normalizedEmail);
       setMessage({ type: 'success', text: locale === 'id' ? 'Akun berhasil dibuat. Periksa email untuk mengaktifkan akun, lalu masuk.' : 'Account created. Check your email to activate it, then sign in.' });
       return;
     }
 
-    const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data: signInData, error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
     setIsLoading(false);
     if (error) {
       const emailNotConfirmed = error.message.toLowerCase().includes('email not confirmed');
-      if (emailNotConfirmed) setUnconfirmedEmail(email);
+      if (emailNotConfirmed) setUnconfirmedEmail(normalizedEmail);
       setMessage({
         type: 'error',
         text: emailNotConfirmed
@@ -185,7 +195,7 @@ export default function LoginClient({ initialMode = 'login' }: { initialMode?: A
   return (
     <main className="min-h-screen bg-neutral-50 lg:grid lg:grid-cols-2">
       <div className="relative hidden min-h-screen overflow-hidden bg-brand-950 lg:block">
-        <Image src="/images/hero-banner.png" alt="Pengalaman berkuda di Banyuwangi" fill priority sizes="50vw" className="object-cover" />
+        <Image src="/images/hero-banner.png" alt={locale === 'id' ? 'Pengalaman berkuda di Banyuwangi' : 'Horse riding experience in Banyuwangi'} fill priority sizes="50vw" className="object-cover" />
         <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(10,26,20,.88),rgba(10,26,20,.12)_65%)]" />
         <Link href="/" className="absolute left-9 top-9 flex items-center gap-3 text-white">
           <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur"><Trees className="h-[18px] w-[18px] text-accent-300" strokeWidth={1.7} /></span>
@@ -234,13 +244,13 @@ export default function LoginClient({ initialMode = 'login' }: { initialMode?: A
 
           {previewMode && mode === 'login' && (
             <div className="mb-5 rounded-2xl border border-accent-500/25 bg-accent-100/55 p-4">
-              <p className="text-[0.62rem] font-extrabold uppercase tracking-[0.15em] text-brand-700">Akun demo lokal</p>
+              <p className="text-[0.62rem] font-extrabold uppercase tracking-[0.15em] text-brand-700">{locale === 'id' ? 'Akun demo lokal' : 'Local demo accounts'}</p>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {(['admin', 'member'] as const).map((role) => (
                   <button key={role} type="button" onClick={() => fillPreviewAccount(role)} className="rounded-xl border border-brand-900/10 bg-white p-3 text-left transition-colors hover:border-brand-600">
                     <span className="block text-xs font-extrabold capitalize text-brand-900">{role}</span>
                     <span className="mt-1 block truncate text-[0.64rem] text-neutral-500">{previewAccounts[role].email}</span>
-                    <span className="mt-1 block text-[0.64rem] font-semibold text-brand-600">Klik untuk isi otomatis</span>
+                    <span className="mt-1 block text-[0.64rem] font-semibold text-brand-600">{locale === 'id' ? 'Klik untuk isi otomatis' : 'Click to autofill'}</span>
                   </button>
                 ))}
               </div>
@@ -270,7 +280,7 @@ export default function LoginClient({ initialMode = 'login' }: { initialMode?: A
               <label htmlFor="login-email" className="form-label">{t.login.emailLabel}</label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" strokeWidth={1.7} />
-                <input id="login-email" name="email" type="email" className="form-input pl-10" placeholder={t.login.emailPlaceholder} value={email} onChange={(event) => setEmail(event.target.value)} required autoComplete="email" />
+                <input id="login-email" name="email" type="email" inputMode="email" autoCapitalize="none" spellCheck={false} className="form-input pl-10" placeholder={t.login.emailPlaceholder} value={email} onChange={(event) => setEmail(event.target.value)} required autoComplete="email" />
               </div>
             </div>
 
@@ -283,7 +293,7 @@ export default function LoginClient({ initialMode = 'login' }: { initialMode?: A
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" strokeWidth={1.7} />
                   <input id="login-password" name="password" type={showPassword ? 'text' : 'password'} className="form-input pl-10 pr-10" placeholder={t.login.passwordPlaceholder} value={password} onChange={(event) => setPassword(event.target.value)} required minLength={8} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} />
-                  <button type="button" onClick={() => setShowPassword((visible) => !visible)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-brand-700" aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}>
+                  <button type="button" onClick={() => setShowPassword((visible) => !visible)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-brand-700" aria-label={showPassword ? (locale === 'id' ? 'Sembunyikan password' : 'Hide password') : (locale === 'id' ? 'Tampilkan password' : 'Show password')}>
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>

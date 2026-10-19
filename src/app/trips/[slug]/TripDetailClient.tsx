@@ -16,6 +16,7 @@ import { formatCurrency, getCategoryLabel } from '@/lib/utils';
 import { useLanguage } from '@/lib/i18n/context';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
+import { localizeTrip } from '@/lib/localized-content';
 
 interface Props {
   trip: Trip | null;
@@ -39,9 +40,7 @@ export default function TripDetailClient({ trip }: Props) {
             >
               {t.tripDetail.notFound}
             </h1>
-            <p className="text-neutral-500 mb-6 text-sm">
-              Trip yang kamu cari tidak tersedia.
-            </p>
+            <p className="text-neutral-500 mb-6 text-sm">{locale === 'id' ? 'Trip yang kamu cari tidak tersedia.' : 'The trip you are looking for is unavailable.'}</p>
             <Link href="/#trips" className="btn-primary">
               {t.tripDetail.backBtn}
             </Link>
@@ -51,6 +50,8 @@ export default function TripDetailClient({ trip }: Props) {
       </>
     );
   }
+
+  const localizedTrip = localizeTrip(trip, locale);
 
   const difficultyClass =
     trip.difficulty_level === 'Easy'
@@ -80,7 +81,7 @@ export default function TripDetailClient({ trip }: Props) {
         <div className="relative h-72 sm:h-96 lg:h-[480px] bg-neutral-200">
           <Image
             src={trip.cover_image_url || '/images/hero-banner.png'}
-            alt={trip.title}
+            alt={localizedTrip.title}
             fill
             className="object-cover"
             priority
@@ -116,7 +117,7 @@ export default function TripDetailClient({ trip }: Props) {
                 lineHeight: 1.1,
               }}
             >
-              {trip.title}
+              {localizedTrip.title}
             </h1>
           </div>
         </div>
@@ -148,15 +149,15 @@ export default function TripDetailClient({ trip }: Props) {
                     color: '#1a1a14',
                   }}
                 >
-                  {trip.title}
+                  {localizedTrip.title}
                 </h2>
                 <p className="text-neutral-600 leading-relaxed text-sm whitespace-pre-line">
-                  {trip.description}
+                  {localizedTrip.description}
                 </p>
               </div>
 
               {/* Highlights */}
-              {trip.highlights && trip.highlights.length > 0 && (
+              {localizedTrip.highlights && localizedTrip.highlights.length > 0 && (
                 <div className="bg-white rounded-xl p-7 border border-neutral-200">
                   <h3
                     className="mb-5"
@@ -170,7 +171,7 @@ export default function TripDetailClient({ trip }: Props) {
                     {t.tripDetail.highlights}
                   </h3>
                   <div className="grid sm:grid-cols-2 gap-3">
-                    {trip.highlights.map((h) => (
+                    {localizedTrip.highlights.map((h) => (
                       <div key={h} className="flex items-start gap-3">
                         <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#2e5f1e' }} />
                         <span className="text-sm text-neutral-700">{h}</span>

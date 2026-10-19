@@ -13,19 +13,23 @@ export default function Contact() {
   const phone = content('contact_phone');
   const email = content('contact_email');
   const whatsapp = content('whatsapp_number');
+  const address = locale === 'en' ? content('contact_address_en') : content('contact_address');
+  const operatingHours = locale === 'en' ? content('operating_hours_en') : content('operating_hours');
 
   if (siteContent['global.show_contact'] === 'false') return null;
 
   const contactItems = [
     { icon: Phone, label: t.contact.labels.phone, value: phone, href: `tel:${phone.replace(/\s/g, '')}` },
     { icon: Mail, label: t.contact.labels.email, value: email, href: `mailto:${email}` },
-    { icon: MapPin, label: t.contact.labels.address, value: content('contact_address'), href: 'https://maps.google.com/?q=Rider+Horse+Banyuwangi' },
-    { icon: Clock3, label: t.contact.labels.hours, value: content('operating_hours'), href: null },
+    { icon: MapPin, label: t.contact.labels.address, value: address, href: 'https://maps.google.com/?q=Rider+Horse+Banyuwangi' },
+    { icon: Clock3, label: t.contact.labels.hours, value: operatingHours, href: null },
   ];
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const text = `Halo Rider Horse Banyuwangi!\n\nNama: ${formData.name}\nEmail: ${formData.email || '-'}\nNo. HP: ${formData.phone}\n\nPesan:\n${formData.message}`;
+    const text = locale === 'id'
+      ? `Halo Rider Horse Banyuwangi!\n\nNama: ${formData.name}\nEmail: ${formData.email || '-'}\nNo. HP: ${formData.phone}\n\nPesan:\n${formData.message}`
+      : `Hello Rider Horse Banyuwangi!\n\nName: ${formData.name}\nEmail: ${formData.email || '-'}\nPhone: ${formData.phone}\n\nMessage:\n${formData.message}`;
     window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
     setSubmitted(true);
   }

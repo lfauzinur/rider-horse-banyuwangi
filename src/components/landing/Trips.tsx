@@ -8,6 +8,7 @@ import type { Trip } from '@/types';
 import { useState } from 'react';
 import { useLanguage } from '@/lib/i18n/context';
 import { useCatalog } from '@/lib/catalog-context';
+import { localizeTrip } from '@/lib/localized-content';
 
 const categoryKeys = ['all', 'beach_ride', 'forest_trail', 'sunset_ride', 'mountain_trail', 'private_lesson', 'group_class'] as const;
 
@@ -18,6 +19,7 @@ const categoryLabels = {
 
 function TripCard({ trip, featured = false }: { trip: Trip; featured?: boolean }) {
   const { t, locale } = useLanguage();
+  const localizedTrip = localizeTrip(trip, locale);
   const duration = trip.duration_minutes >= 60
     ? `${Math.floor(trip.duration_minutes / 60)} ${locale === 'id' ? 'jam' : 'hr'}${trip.duration_minutes % 60 ? ` ${trip.duration_minutes % 60}m` : ''}`
     : `${trip.duration_minutes}m`;
@@ -27,7 +29,7 @@ function TripCard({ trip, featured = false }: { trip: Trip; featured?: boolean }
       <Link href={`/trips/${trip.slug}`} className="relative block h-60 overflow-hidden sm:h-64">
         <Image
           src={trip.cover_image_url || '/images/hero-banner.png'}
-          alt={trip.title}
+          alt={localizedTrip.title}
           fill
           sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 33vw"
           className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -47,9 +49,9 @@ function TripCard({ trip, featured = false }: { trip: Trip; featured?: boolean }
 
       <div className="flex flex-1 flex-col p-5 sm:p-6">
         <h3 className="font-display text-[1.45rem] font-bold leading-tight text-brand-950">
-          <Link href={`/trips/${trip.slug}`} className="transition-colors hover:text-brand-600">{trip.title}</Link>
+          <Link href={`/trips/${trip.slug}`} className="transition-colors hover:text-brand-600">{localizedTrip.title}</Link>
         </h3>
-        <p className="mt-2 line-clamp-2 text-xs leading-5 text-neutral-500">{trip.short_description}</p>
+        <p className="mt-2 line-clamp-2 text-xs leading-5 text-neutral-500">{localizedTrip.short_description}</p>
 
         <div className="mt-5 flex items-center gap-4 border-y border-brand-900/8 py-3 text-[0.68rem] font-semibold text-neutral-500">
           <span className="flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5 text-brand-600" />{duration}</span>
@@ -61,7 +63,7 @@ function TripCard({ trip, featured = false }: { trip: Trip; featured?: boolean }
             <p className="text-[0.62rem] font-bold uppercase tracking-[0.1em] text-neutral-400">{t.trips.startFrom}</p>
             <p className="mt-1 font-display text-xl font-bold text-brand-800">{formatCurrency(trip.price)}</p>
           </div>
-          <Link href={`/trips/${trip.slug}`} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-900 text-white transition-transform hover:-translate-y-1" aria-label={`${t.trips.bookNow}: ${trip.title}`}>
+          <Link href={`/trips/${trip.slug}`} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-900 text-white transition-transform hover:-translate-y-1" aria-label={`${t.trips.bookNow}: ${localizedTrip.title}`}>
             <ArrowUpRight className="h-4 w-4" />
           </Link>
         </div>
@@ -88,7 +90,7 @@ export default function Trips() {
             <p className="section-copy mt-5 max-w-2xl">{t.trips.description}</p>
           </div>
 
-          <div className="flex max-w-full gap-2 overflow-x-auto pb-2 lg:max-w-[570px]" aria-label="Filter trip">
+          <div className="flex max-w-full gap-2 overflow-x-auto pb-2 lg:max-w-[570px]" aria-label={locale === 'id' ? 'Filter trip' : 'Trip filters'}>
             {categoryKeys.map((category) => (
               <button
                 key={category}

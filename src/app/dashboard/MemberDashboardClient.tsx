@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowUpRight, CalendarCheck2, CheckCircle2, Clock3, CloudOff, Compass, Download, MapPin, ReceiptText, Smartphone, Sparkles, Wifi } from 'lucide-react';
+import { ArrowUpRight, CalendarCheck2, CheckCircle2, Clock3, CloudOff, Compass, Download, MapPin, ReceiptText, Smartphone, Wifi } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import DashboardShell from '@/components/app/DashboardShell';
 import { useAuth } from '@/lib/use-auth';
@@ -12,6 +12,8 @@ import { createClient } from '@/lib/supabase/client';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { previewBookings, readLocalBookings } from '@/lib/member-bookings';
 import type { Booking } from '@/types';
+import { useLanguage } from '@/lib/i18n/context';
+import { localizeTrip } from '@/lib/localized-content';
 
 interface InstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -19,6 +21,8 @@ interface InstallPromptEvent extends Event {
 }
 
 export default function MemberDashboardClient() {
+  const { locale } = useLanguage();
+  const l = (id: string, en: string) => locale === 'id' ? id : en;
   const { configured, user, profile, loading } = useAuth('member');
   const { trips } = useCatalog();
   const [bookings, setBookings] = useState<Booking[]>(configured ? [] : previewBookings);
@@ -86,7 +90,7 @@ export default function MemberDashboardClient() {
       setInstallPrompt(null);
       return;
     }
-    setInstallHelp('Gunakan menu browser lalu pilih “Install app” atau “Tambahkan ke Layar Utama”.');
+    setInstallHelp(l('Gunakan menu browser lalu pilih “Install app” atau “Tambahkan ke Layar Utama”.', 'Open the browser menu, then choose “Install app” or “Add to Home Screen”.'));
   }
 
   const upcoming = useMemo(() => bookings.filter((booking) => ['pending', 'confirmed'].includes(booking.status)), [bookings]);
@@ -101,7 +105,7 @@ export default function MemberDashboardClient() {
     <DashboardShell role="member" userName={displayName} userEmail={displayEmail}>
       {!configured && (
         <div className="mb-6 rounded-2xl border border-accent-500/30 bg-accent-100/55 p-4 text-xs leading-6 text-brand-800">
-          <strong>Mode preview:</strong> hubungkan Supabase untuk mengaktifkan akun, sinkronisasi booking, dan akses lintas perangkat.
+          <strong>{l('Mode preview:', 'Preview mode:')}</strong> {l('hubungkan Supabase untuk mengaktifkan akun, sinkronisasi booking, dan akses lintas perangkat.', 'connect Supabase to enable accounts, booking sync, and access across devices.')}
         </div>
       )}
 
@@ -110,28 +114,28 @@ export default function MemberDashboardClient() {
         <div className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
           <div>
             <p className="text-[0.62rem] font-extrabold uppercase tracking-[0.17em] text-accent-300">Member experience</p>
-            <h1 className="mt-3 max-w-xl font-display text-3xl font-bold leading-tight sm:text-5xl">Petualangan berikutnya menantimu.</h1>
-            <p className="mt-4 max-w-xl text-sm leading-7 text-white/55">Pilih trip, pesan jadwal, dan pantau seluruh perjalananmu langsung dari satu aplikasi.</p>
+            <h1 className="mt-3 max-w-xl font-display text-3xl font-bold leading-tight sm:text-5xl">{l('Petualangan berikutnya menantimu.', 'Your next adventure awaits.')}</h1>
+            <p className="mt-4 max-w-xl text-sm leading-7 text-white/55">{l('Pilih trip, pesan jadwal, dan pantau seluruh perjalananmu langsung dari satu aplikasi.', 'Choose a trip, reserve a schedule, and track your entire journey from one app.')}</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href="/dashboard/trips" className="btn-primary">Pilih Trip <ArrowUpRight className="h-4 w-4" /></Link>
+            <Link href="/dashboard/trips" className="btn-primary">{l('Pilih Trip', 'Choose a Trip')} <ArrowUpRight className="h-4 w-4" /></Link>
             <button type="button" onClick={() => void installApp()} disabled={installed} className="btn-outline !border-white/20 !text-white hover:!bg-white hover:!text-brand-950 disabled:cursor-default disabled:opacity-65">
-              {installed ? <CheckCircle2 className="h-4 w-4" /> : <Download className="h-4 w-4" />} {installed ? 'App Terpasang' : 'Install App'}
+              {installed ? <CheckCircle2 className="h-4 w-4" /> : <Download className="h-4 w-4" />} {installed ? l('App Terpasang', 'App Installed') : 'Install App'}
             </button>
           </div>
         </div>
       </section>
 
-      <section className="mt-6 rounded-[1.5rem] border border-brand-900/8 bg-white p-5 sm:p-6" aria-label="Status PWA">
+      <section className="mt-6 rounded-[1.5rem] border border-brand-900/8 bg-white p-5 sm:p-6" aria-label={l('Status PWA', 'PWA status')}>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-start gap-4">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand-100 text-brand-700"><Smartphone className="h-5 w-5" /></span>
-            <div><p className="font-display text-xl font-bold">Rider Horse PWA</p><p className="mt-1 text-xs leading-5 text-neutral-500">Dapat dipasang seperti aplikasi dan membuka halaman yang sudah tersimpan saat koneksi terputus.</p></div>
+            <div><p className="font-display text-xl font-bold">Rider Horse PWA</p><p className="mt-1 text-xs leading-5 text-neutral-500">{l('Dapat dipasang seperti aplikasi dan membuka halaman yang sudah tersimpan saat koneksi terputus.', 'Install it like an app and reopen cached pages when your connection is unavailable.')}</p></div>
           </div>
           <div className="grid grid-cols-3 gap-2 sm:min-w-[420px]">
-            <PwaStatus icon={installed ? CheckCircle2 : Smartphone} label="Instalasi" value={installed ? 'Terpasang' : 'Siap install'} active={installed || Boolean(installPrompt)} />
-            <PwaStatus icon={CheckCircle2} label="Offline cache" value={offlineReady ? 'Aktif' : 'Menyiapkan'} active={offlineReady} />
-            <PwaStatus icon={online ? Wifi : CloudOff} label="Koneksi" value={online ? 'Online' : 'Offline'} active={online} />
+            <PwaStatus icon={installed ? CheckCircle2 : Smartphone} label={l('Instalasi', 'Installation')} value={installed ? l('Terpasang', 'Installed') : l('Siap install', 'Ready to install')} active={installed || Boolean(installPrompt)} />
+            <PwaStatus icon={CheckCircle2} label="Offline cache" value={offlineReady ? l('Aktif', 'Active') : l('Menyiapkan', 'Preparing')} active={offlineReady} />
+            <PwaStatus icon={online ? Wifi : CloudOff} label={l('Koneksi', 'Connection')} value={online ? 'Online' : 'Offline'} active={online} />
           </div>
         </div>
         {installHelp && <p role="status" className="mt-4 rounded-xl bg-accent-100 px-4 py-3 text-xs font-semibold text-brand-800">{installHelp}</p>}
@@ -139,10 +143,10 @@ export default function MemberDashboardClient() {
 
       <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: 'Booking aktif', value: upcoming.length, icon: CalendarCheck2 },
-          { label: 'Total perjalanan', value: bookings.length, icon: Compass },
-          { label: 'Level rider', value: profile?.riding_level || 'Beginner', icon: Sparkles },
-          { label: 'Total transaksi', value: formatCurrency(totalSpent), icon: ReceiptText },
+          { label: l('Booking aktif', 'Active bookings'), value: upcoming.length, icon: CalendarCheck2 },
+          { label: l('Total perjalanan', 'Total trips'), value: bookings.length, icon: Compass },
+          { label: l('Booking dikonfirmasi', 'Confirmed bookings'), value: bookings.filter((item) => item.status === 'confirmed').length, icon: CheckCircle2 },
+          { label: l('Total transaksi', 'Total transactions'), value: formatCurrency(totalSpent), icon: ReceiptText },
         ].map(({ label, value, icon: Icon }) => (
           <div key={label} className="rounded-2xl border border-brand-900/8 bg-white p-5">
             <Icon className="h-5 w-5 text-brand-600" strokeWidth={1.7} />
@@ -155,13 +159,14 @@ export default function MemberDashboardClient() {
       <section className="mt-8 grid gap-6 xl:grid-cols-[1.25fr_.75fr]">
         <div className="rounded-[1.5rem] border border-brand-900/8 bg-white p-5 sm:p-7">
           <div className="flex items-end justify-between gap-4">
-            <div><p className="text-[0.62rem] font-extrabold uppercase tracking-[0.15em] text-brand-600">Your schedule</p><h2 className="mt-2 font-display text-2xl font-bold">Booking terbaru</h2></div>
-            <Link href="/dashboard/trips" className="text-xs font-bold text-brand-600">Tambah booking →</Link>
+            <div><p className="text-[0.62rem] font-extrabold uppercase tracking-[0.15em] text-brand-600">Your schedule</p><h2 className="mt-2 font-display text-2xl font-bold">{l('Booking terbaru', 'Recent bookings')}</h2></div>
+            <Link href="/dashboard/trips" className="text-xs font-bold text-brand-600">{l('Tambah booking', 'Add booking')} →</Link>
           </div>
           <div className="mt-6 space-y-3">
-            {bookings.length === 0 && <p className="rounded-xl bg-neutral-100 p-5 text-sm text-neutral-500">Belum ada booking. Pilih trip pertama kamu untuk memulai.</p>}
+            {bookings.length === 0 && <p className="rounded-xl bg-neutral-100 p-5 text-sm text-neutral-500">{l('Belum ada booking. Pilih trip pertama kamu untuk memulai.', 'No bookings yet. Choose your first trip to get started.')}</p>}
             {bookings.map((booking) => {
-              const trip = booking.trip || trips.find((item) => item.id === booking.trip_id);
+              const sourceTrip = booking.trip || trips.find((item) => item.id === booking.trip_id);
+              const trip = sourceTrip ? localizeTrip(sourceTrip, locale) : undefined;
               return (
                 <article key={booking.id} className="flex flex-col gap-4 rounded-2xl border border-brand-900/8 p-4 sm:flex-row sm:items-center">
                   <div className="relative h-24 w-full overflow-hidden rounded-xl sm:w-28">
@@ -169,7 +174,7 @@ export default function MemberDashboardClient() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2"><h3 className="font-display text-lg font-bold">{trip?.title || 'Riding Trip'}</h3><span className="rounded-full bg-brand-100 px-2.5 py-1 text-[0.58rem] font-extrabold uppercase text-brand-700">{booking.status}</span></div>
-                    <div className="mt-2 flex flex-wrap gap-4 text-xs text-neutral-500"><span className="flex items-center gap-1.5"><CalendarCheck2 className="h-3.5 w-3.5" />{formatDate(booking.booking_date)}</span><span className="flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5" />{booking.time_slot} WIB</span></div>
+                    <div className="mt-2 flex flex-wrap gap-4 text-xs text-neutral-500"><span className="flex items-center gap-1.5"><CalendarCheck2 className="h-3.5 w-3.5" />{formatDate(booking.booking_date, locale)}</span><span className="flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5" />{booking.time_slot} WIB</span></div>
                   </div>
                   <p className="font-display text-lg font-bold text-brand-800">{formatCurrency(booking.total_price)}</p>
                 </article>
@@ -180,7 +185,7 @@ export default function MemberDashboardClient() {
 
         <aside className="overflow-hidden rounded-[1.5rem] bg-brand-900 text-white">
           <div className="relative h-48"><Image src="/images/forest-trail.jpg" alt="Forest trail recommendation" fill sizes="(max-width: 1279px) 100vw, 35vw" className="object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-brand-900 to-transparent" /></div>
-          <div className="p-6"><div className="flex items-center gap-2 text-[0.62rem] font-extrabold uppercase tracking-[0.15em] text-accent-300"><MapPin className="h-3.5 w-3.5" /> Recommended</div><h2 className="mt-3 font-display text-2xl font-bold">Forest Mountain Trail</h2><p className="mt-3 text-xs leading-6 text-white/55">Naikkan levelmu dengan jalur hutan tropis dan panorama pegunungan Banyuwangi.</p><Link href="/dashboard/trips/forest-mountain-trail" className="mt-5 inline-flex items-center gap-2 text-xs font-bold text-accent-300">Lihat trip <ArrowUpRight className="h-3.5 w-3.5" /></Link></div>
+          <div className="p-6"><div className="flex items-center gap-2 text-[0.62rem] font-extrabold uppercase tracking-[0.15em] text-accent-300"><MapPin className="h-3.5 w-3.5" /> Recommended</div><h2 className="mt-3 font-display text-2xl font-bold">Forest Mountain Trail</h2><p className="mt-3 text-xs leading-6 text-white/55">{l('Naikkan levelmu dengan jalur hutan tropis dan panorama pegunungan Banyuwangi.', 'Build your confidence on a tropical forest trail with Banyuwangi mountain views.')}</p><Link href="/dashboard/trips/forest-mountain-trail" className="mt-5 inline-flex items-center gap-2 text-xs font-bold text-accent-300">{l('Lihat trip', 'View trip')} <ArrowUpRight className="h-3.5 w-3.5" /></Link></div>
         </aside>
       </section>
     </DashboardShell>

@@ -20,9 +20,12 @@ export interface User {
 export interface Trip {
   id: string;
   title: string;
+  title_en?: string | null;
   slug: string;
   description: string | null;
+  description_en?: string | null;
   short_description: string | null;
+  short_description_en?: string | null;
   duration_minutes: number;
   price: number;
   difficulty_level: 'Easy' | 'Moderate' | 'Challenging';
@@ -31,6 +34,7 @@ export interface Trip {
   gallery_images: string[] | null;
   category: 'beach_ride' | 'forest_trail' | 'sunset_ride' | 'mountain_trail' | 'private_lesson' | 'group_class';
   highlights: string[] | null;
+  highlights_en?: string[] | null;
   is_active: boolean;
   created_at: string;
 }

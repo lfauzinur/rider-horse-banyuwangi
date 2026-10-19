@@ -1,6 +1,11 @@
+'use client';
+
+import { useLanguage } from '@/lib/i18n/context';
+
 export default function BeachRiderLoader({ visible = true }: { visible?: boolean }) {
+  const { locale } = useLanguage();
   return (
-    <div className={`beach-loader ${visible ? 'is-visible' : 'is-hidden'}`} role="status" aria-live="polite" aria-label="Menyiapkan halaman">
+    <div className={`beach-loader ${visible ? 'is-visible' : 'is-hidden'}`} role="status" aria-live="polite" aria-label={locale === 'id' ? 'Menyiapkan halaman' : 'Preparing page'}>
       <div className="beach-loader__content">
         <div className="beach-loader__brand"><span>Rider Horse</span><small>Banyuwangi</small></div>
         <svg className="beach-loader__scene" viewBox="0 0 360 190" aria-hidden="true">
@@ -46,8 +51,8 @@ export default function BeachRiderLoader({ visible = true }: { visible?: boolean
           </g>
         </svg>
         <div className="beach-loader__copy">
-          <strong>Menyiapkan perjalananmu</strong>
-          <span>Langkah kecil menuju petualangan besar</span>
+          <strong>{locale === 'id' ? 'Menyiapkan perjalananmu' : 'Preparing your journey'}</strong>
+          <span>{locale === 'id' ? 'Langkah kecil menuju petualangan besar' : 'A small step toward a great adventure'}</span>
         </div>
         <div className="beach-loader__progress" aria-hidden="true"><span /></div>
       </div>

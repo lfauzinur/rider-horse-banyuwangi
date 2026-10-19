@@ -43,7 +43,7 @@ const sections: SectionDefinition[] = [
   { id: 'trips', label: 'Bagian trip', description: 'Heading, filter, CTA, dan label katalog. Paket trip dikelola lewat tab Trip.', icon: ImageIcon, prefixes: ['id.trips.', 'en.trips.'], visibilityKey: 'global.show_trips' },
   { id: 'testimonials', label: 'Bagian testimoni', description: 'Heading dan visual social proof. Cerita rider dikelola lewat tab Testimoni.', icon: MessageSquareQuote, prefixes: ['id.testimonials.', 'en.testimonials.'], globals: ['global.testimonials_image_url'], visibilityKey: 'global.show_testimonials' },
   { id: 'articles', label: 'Bagian artikel', description: 'Heading artikel pada landing page. Artikel lengkap dikelola lewat tab Artikel.', icon: BookOpenText, prefixes: ['id.articles.', 'en.articles.'], visibilityKey: 'global.show_articles' },
-  { id: 'contact', label: 'Kontak & formulir', description: 'Seluruh label formulir, CTA WhatsApp, serta informasi bisnis.', icon: ContactRound, prefixes: ['id.contact.', 'en.contact.'], globals: ['global.contact_phone', 'global.contact_email', 'global.contact_address', 'global.operating_hours', 'global.whatsapp_number'], visibilityKey: 'global.show_contact' },
+  { id: 'contact', label: 'Kontak & formulir', description: 'Seluruh label formulir, CTA WhatsApp, serta informasi bisnis.', icon: ContactRound, prefixes: ['id.contact.', 'en.contact.'], globals: ['global.contact_phone', 'global.contact_email', 'global.contact_address', 'global.contact_address_en', 'global.operating_hours', 'global.operating_hours_en', 'global.whatsapp_number'], visibilityKey: 'global.show_contact' },
 ];
 
 const friendlyLabels: Record<string, string> = {
@@ -62,7 +62,7 @@ const friendlyLabels: Record<string, string> = {
   copyright: 'Hak cipta', madeWith: 'Teks dibuat dengan', inBanyuwangi: 'Teks lokasi', home: 'Menu beranda', about: 'Menu tentang',
   services: 'Menu layanan', trips: 'Menu trip', articles: 'Menu artikel', contact: 'Menu kontak', signIn: 'Tombol masuk',
   bookTrip: 'Tombol pesan trip', contact_phone: 'Nomor telepon', contact_email: 'Email bisnis', contact_address: 'Alamat',
-  operating_hours: 'Jam operasional', whatsapp_number: 'Nomor WhatsApp', hero_image_url: 'Gambar hero',
+  contact_address_en: 'Alamat (Inggris)', operating_hours: 'Jam operasional', operating_hours_en: 'Jam operasional (Inggris)', whatsapp_number: 'Nomor WhatsApp', hero_image_url: 'Gambar hero',
   about_primary_image_url: 'Gambar utama', about_secondary_image_url: 'Gambar pendamping 1', about_tertiary_image_url: 'Gambar pendamping 2',
   testimonials_image_url: 'Gambar testimoni',
 };
