@@ -3,8 +3,9 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bell, BookOpenText, BriefcaseBusiness, CalendarCheck2, CloudOff, HandCoins, LayoutDashboard, LogOut, Menu, MessageSquareText, Settings2, ShieldCheck, Trees, UserRound, Wifi, X } from 'lucide-react';
+import { BookOpenText, BriefcaseBusiness, CalendarCheck2, CloudOff, HandCoins, LayoutDashboard, LogOut, Menu, MessageSquareText, Settings2, ShieldCheck, Trees, UserRound, Wifi, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import NotificationMenu from '@/components/app/NotificationMenu';
 import { createClient } from '@/lib/supabase/client';
 import { isSupabaseConfigured } from '@/lib/supabase/config';
 import { PREVIEW_AUTH_COOKIE, PREVIEW_AUTH_STORAGE } from '@/lib/preview-auth';
@@ -80,7 +81,7 @@ export default function DashboardShell({ children, role, userName, userEmail, ad
             ? false
             : href === '/dashboard' ? pathname === href : pathname.startsWith(href);
           return (
-            <Link key={href} href={href} onClick={() => setMenuOpen(false)} className={`flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition-colors ${active ? 'bg-accent-400 text-brand-950' : 'text-white/62 hover:bg-white/5 hover:text-white'}`}>
+            <Link key={href} href={href} prefetch={role === 'member' ? false : undefined} onClick={() => setMenuOpen(false)} className={`flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition-colors ${active ? 'bg-accent-400 text-brand-950' : 'text-white/62 hover:bg-white/5 hover:text-white'}`}>
               <Icon className="h-4 w-4" strokeWidth={1.7} />
               {label}
             </Link>
@@ -142,8 +143,8 @@ export default function DashboardShell({ children, role, userName, userEmail, ad
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button type="button" className="flex h-10 w-10 items-center justify-center rounded-full border border-brand-900/10 bg-white text-brand-700" aria-label="Notifikasi"><Bell className="h-4 w-4" /></button>
-            <button type="button" className="hidden h-10 w-10 items-center justify-center rounded-full border border-brand-900/10 bg-white text-brand-700 sm:flex" aria-label="Pengaturan"><Settings2 className="h-4 w-4" /></button>
+            <NotificationMenu role={role} />
+            {role === 'member' && <Link href="/dashboard/profile" className="hidden h-10 w-10 items-center justify-center rounded-full border border-brand-900/10 bg-white text-brand-700 sm:flex" aria-label="Pengaturan profil"><Settings2 className="h-4 w-4" /></Link>}
           </div>
         </header>
         <main className="p-4 pb-24 sm:p-7 sm:pb-24 lg:p-9">{children}</main>
@@ -158,7 +159,7 @@ export default function DashboardShell({ children, role, userName, userEmail, ad
             { href: '/dashboard/profile', label: 'Profil', icon: UserRound },
           ].map(({ href, label, icon: Icon }) => {
             const active = href === '/dashboard' ? pathname === href : pathname.startsWith(href);
-            return <Link key={href} href={href} className={`flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-2 text-[0.56rem] font-bold ${active ? 'bg-accent-400 text-brand-950' : 'text-white/58'}`}><Icon className="h-4 w-4" /><span className="max-w-full truncate">{label}</span></Link>;
+            return <Link key={href} href={href} prefetch={false} className={`flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-2 text-[0.56rem] font-bold ${active ? 'bg-accent-400 text-brand-950' : 'text-white/58'}`}><Icon className="h-4 w-4" /><span className="max-w-full truncate">{label}</span></Link>;
           })}
         </nav>
       )}

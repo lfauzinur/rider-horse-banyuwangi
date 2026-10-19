@@ -280,6 +280,66 @@ select:focus-visible { outline: 2px solid var(--accent); }
   to { opacity: 1; transform: translateY(0); }
 }
 
+.beach-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: #f7f4eb;
+  color: #132a21;
+  transition: opacity 320ms ease, visibility 320ms ease;
+}
+
+.beach-loader.is-hidden {
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+}
+
+.beach-loader.is-visible {
+  visibility: visible;
+  opacity: 1;
+}
+
+.beach-loader__content { width: min(100%, 31rem); text-align: center; }
+.beach-loader__brand { display: inline-flex; flex-direction: column; font-family: var(--font-display), Georgia, serif; font-size: 1.45rem; font-weight: 800; line-height: 1; }
+.beach-loader__brand small { margin-top: .42rem; color: #9d821b; font-family: var(--font-sans), sans-serif; font-size: .58rem; letter-spacing: .26em; text-transform: uppercase; }
+.beach-loader__scene { display: block; width: 100%; margin: 1.4rem auto 1.15rem; filter: drop-shadow(0 22px 32px rgb(22 43 35 / 13%)); }
+.beach-loader__rider { animation: beach-rider-travel 1.8s ease-in-out infinite, beach-rider-bob .42s ease-in-out infinite alternate; transform-origin: center; }
+.beach-loader__legs { animation: beach-rider-gallop .42s ease-in-out infinite alternate; transform-origin: 128px 130px; }
+.beach-loader__waves { animation: beach-waves 2.8s linear infinite; }
+.beach-loader__copy strong { display: block; font-family: var(--font-display), Georgia, serif; font-size: clamp(1.3rem, 4.5vw, 1.8rem); }
+.beach-loader__copy span { display: block; margin-top: .5rem; color: #756f64; font-size: .76rem; }
+.beach-loader__progress { width: min(12rem, 56vw); height: 3px; margin: 1.4rem auto 0; overflow: hidden; border-radius: 99px; background: rgb(19 42 33 / 10%); }
+.beach-loader__progress span { display: block; width: 42%; height: 100%; border-radius: inherit; background: #dfbe36; animation: beach-loader-progress 1.05s ease-in-out infinite; }
+
+@keyframes beach-rider-travel {
+  0%, 100% { transform: translateX(-10px); }
+  50% { transform: translateX(12px); }
+}
+
+@keyframes beach-rider-bob {
+  from { translate: 0 0; }
+  to { translate: 0 -2px; }
+}
+
+@keyframes beach-rider-gallop {
+  from { rotate: -2deg; }
+  to { rotate: 3deg; }
+}
+
+@keyframes beach-waves {
+  from { transform: translateX(-10px); }
+  to { transform: translateX(12px); }
+}
+
+@keyframes beach-loader-progress {
+  0% { transform: translateX(-115%); }
+  100% { transform: translateX(340%); }
+}
+
 @media (max-width: 639px) {
   .container-main { width: min(100% - 1.25rem, var(--max-width)); }
   .section-shell { padding-block: 4.25rem; }

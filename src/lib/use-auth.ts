@@ -60,20 +60,23 @@ export function useAuth(requiredRole?: 'member' | 'admin') {
     let active = true;
 
     async function loadUser() {
-      const { data } = await supabase.auth.getUser();
+      // The server proxy already verifies protected routes. Reading the browser
+      // session here avoids a second network race during client navigation.
+      const { data } = await supabase.auth.getSession();
       if (!active) return;
-      if (!data.user) {
+      const currentUser = data.session?.user;
+      if (!currentUser) {
         router.replace('/login');
         setLoading(false);
         return;
       }
 
-      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', data.user.id).maybeSingle();
+      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
       if (!active) return;
       const resolvedProfile = (profileData || {
-        id: data.user.id,
-        email: data.user.email || '',
-        full_name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'Rider',
+        id: currentUser.id,
+        email: currentUser.email || '',
+        full_name: currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'Rider',
         phone_number: null,
         role: 'member',
         riding_level: 'Beginner',
@@ -90,7 +93,7 @@ export function useAuth(requiredRole?: 'member' | 'admin') {
         return;
       }
 
-      setUser(data.user);
+      setUser(currentUser);
       setProfile(resolvedProfile);
       setLoading(false);
     }

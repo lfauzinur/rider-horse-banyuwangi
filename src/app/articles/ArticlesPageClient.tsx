@@ -4,9 +4,11 @@ import ArticleCard from '@/components/articles/ArticleCard';
 import Footer from '@/components/landing/Footer';
 import Navbar from '@/components/landing/Navbar';
 import { useCatalog } from '@/lib/catalog-context';
+import { useLanguage } from '@/lib/i18n/context';
 
 export default function ArticlesPageClient() {
   const { articles } = useCatalog();
+  const { locale } = useLanguage();
   const published = articles.filter((article) => article.is_published);
 
   return (
@@ -16,15 +18,15 @@ export default function ArticlesPageClient() {
         <header className="bg-brand-950 py-20 text-white sm:py-28">
           <div className="container-main">
             <span className="section-kicker !text-accent-300">Rider Journal</span>
-            <h1 className="mt-5 max-w-3xl font-display text-5xl font-bold leading-[1.02] sm:text-7xl">Belajar, bertumbuh, dan berkuda lebih percaya diri.</h1>
-            <p className="mt-6 max-w-2xl text-sm leading-7 text-white/55">Panduan praktis, cerita perjalanan, serta pengetahuan tentang kuda dari instruktur dan tim lapangan kami.</p>
+            <h1 className="mt-5 max-w-3xl font-display text-5xl font-bold leading-[1.02] sm:text-7xl">{locale === 'id' ? 'Belajar, bertumbuh, dan berkuda lebih percaya diri.' : 'Learn, grow, and ride with greater confidence.'}</h1>
+            <p className="mt-6 max-w-2xl text-sm leading-7 text-white/55">{locale === 'id' ? 'Panduan praktis, cerita perjalanan, serta pengetahuan tentang kuda dari instruktur dan tim lapangan kami.' : 'Practical guides, trail stories, and equestrian knowledge from our instructors and field team.'}</p>
           </div>
         </header>
 
         <section className="section-shell">
           <div className="container-main">
             {published.length === 0 ? (
-              <p className="rounded-2xl bg-white p-8 text-center text-sm text-neutral-500">Belum ada artikel yang diterbitkan.</p>
+              <p className="rounded-2xl bg-white p-8 text-center text-sm text-neutral-500">{locale === 'id' ? 'Belum ada artikel yang diterbitkan.' : 'No articles have been published yet.'}</p>
             ) : (
               <>
                 <ArticleCard article={published[0]} featured />

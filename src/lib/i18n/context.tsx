@@ -44,6 +44,19 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    const savedLocale = window.localStorage.getItem('rider-horse-locale');
+    const timeout = window.setTimeout(() => {
+      if (savedLocale === 'id' || savedLocale === 'en') setLocale(savedLocale);
+    }, 0);
+    return () => window.clearTimeout(timeout);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+    window.localStorage.setItem('rider-horse-locale', locale);
+  }, [locale]);
+
+  useEffect(() => {
     const timeout = window.setTimeout(() => void refreshContent(), 0);
     const handleUpdate = () => void refreshContent();
     window.addEventListener('rider-content-updated', handleUpdate);

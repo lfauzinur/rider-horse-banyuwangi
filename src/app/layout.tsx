@@ -3,6 +3,7 @@ import { Toaster } from "react-hot-toast";
 import { LanguageProvider } from "@/lib/i18n/context";
 import { CatalogProvider } from "@/lib/catalog-context";
 import PWARegistration from "@/components/app/PWARegistration";
+import GlobalPageLoader from "@/components/app/GlobalPageLoader";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       data-scroll-behavior="smooth"
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col">
+        <GlobalPageLoader />
         <LanguageProvider>
           <CatalogProvider>
             {children}

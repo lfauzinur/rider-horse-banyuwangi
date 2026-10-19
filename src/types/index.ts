@@ -131,9 +131,12 @@ export interface SiteContent {
 export interface Article {
   id: string;
   title: string;
+  title_en?: string | null;
   slug: string;
   excerpt: string;
+  excerpt_en?: string | null;
   content: string;
+  content_en?: string | null;
   cover_image_url: string | null;
   author: string;
   published_at: string;
