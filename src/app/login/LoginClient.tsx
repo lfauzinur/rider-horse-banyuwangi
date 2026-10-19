@@ -160,7 +160,7 @@ export default function LoginClient({ initialMode = 'login' }: { initialMode?: A
     if (error) {
       const rateLimited = error.message.toLowerCase().includes('rate limit');
       setMessage({ type: 'error', text: rateLimited
-        ? (locale === 'id' ? 'Batas pengiriman email masih aktif. Tunggu sekitar satu menit lalu coba lagi.' : 'The email limit is still active. Wait about a minute and try again.')
+        ? (locale === 'id' ? 'Batas pengiriman email masih aktif. Tunggu beberapa saat lalu coba lagi.' : 'The email limit is still active. Wait a while and try again.')
         : error.message });
       return;
     }
