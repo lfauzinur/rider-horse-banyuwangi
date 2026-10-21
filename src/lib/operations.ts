@@ -68,6 +68,8 @@ export function addReferral(input: Omit<ReferralRecord, 'id' | 'created_at'>) { 
 export function updateReferral(id: string, status: ReferralRecord['status']) { const next = readReferrals().map((item) => item.id === id ? { ...item, status } : item); write(KEYS.referrals, next); }
 export function addFeedback(input: Omit<MemberFeedback, 'id' | 'created_at' | 'status'>) { const item: MemberFeedback = { ...input, id: crypto.randomUUID(), created_at: new Date().toISOString(), status: 'pending' }; write(KEYS.feedback, [item, ...readFeedback()]); return item; }
 export function updateFeedback(id: string, status: MemberFeedback['status']) { const next = readFeedback().map((item) => item.id === id ? { ...item, status } : item); write(KEYS.feedback, next); }
+export function editFeedback(id: string, values: Pick<MemberFeedback, 'type' | 'rating' | 'message'>) { const next = readFeedback().map((item) => item.id === id && item.status === 'pending' ? { ...item, ...values } : item); write(KEYS.feedback, next); return next.find((item) => item.id === id); }
+export function removeFeedback(id: string) { write(KEYS.feedback, readFeedback().filter((item) => item.id !== id || item.status !== 'pending')); }
 export const readPreviewProfile = () => read<Partial<OperationalMember>>(KEYS.profile, {});
 export function savePreviewProfile(values: Partial<OperationalMember>) { window.localStorage.setItem(KEYS.profile, JSON.stringify(values)); updateMember('preview-member', values); window.dispatchEvent(new Event('rider-profile-updated')); }
 
@@ -140,4 +142,16 @@ export async function submitFeedbackRecord(input: Omit<MemberFeedback, 'id' | 'c
 export async function changeFeedbackRecord(id: string, status: MemberFeedback['status']) {
   if (!isSupabaseConfigured()) return updateFeedback(id, status);
   const { error } = await createClient().from('member_feedback').update({ status }).eq('id', id); if (error) throw error;
+}
+
+export async function editMemberFeedbackRecord(id: string, values: Pick<MemberFeedback, 'type' | 'rating' | 'message'>) {
+  if (!isSupabaseConfigured()) return editFeedback(id, values);
+  const { error } = await createClient().from('member_feedback').update(values).eq('id', id).eq('status', 'pending');
+  if (error) throw error;
+}
+
+export async function deleteMemberFeedbackRecord(id: string) {
+  if (!isSupabaseConfigured()) return removeFeedback(id);
+  const { error } = await createClient().from('member_feedback').delete().eq('id', id).eq('status', 'pending');
+  if (error) throw error;
 }

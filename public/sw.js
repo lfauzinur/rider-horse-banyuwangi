@@ -1,5 +1,23 @@
-const CACHE_NAME = 'rider-horse-v5';
+const CACHE_NAME = 'rider-horse-v7';
 const APP_SHELL = ['/', '/login', '/articles', '/offline.html', '/manifest.webmanifest', '/app-icon.svg', '/app-icon-192.png', '/app-icon-512.png'];
+const MEMBER_SHELL = ['/dashboard', '/dashboard/trips', '/dashboard/services', '/dashboard/bookings', '/dashboard/articles', '/dashboard/referrals', '/dashboard/feedback', '/dashboard/profile'];
+
+async function cacheDocumentWithAssets(cache, path) {
+  const response = await fetch(path, { credentials: 'include' });
+  if (!response.ok || response.redirected) return;
+
+  const html = await response.clone().text();
+  await cache.put(path, response.clone());
+
+  const assetUrls = [...html.matchAll(/(?:src|href)=["']([^"']+)["']/g)]
+    .map((match) => new URL(match[1], self.location.origin))
+    .filter((url) => url.origin === self.location.origin && url.pathname.startsWith('/_next/'));
+
+  await Promise.allSettled([...new Set(assetUrls.map((url) => url.href))].map(async (url) => {
+    const assetResponse = await fetch(url, { credentials: 'same-origin' });
+    if (assetResponse.ok) await cache.put(url, assetResponse);
+  }));
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => Promise.allSettled(APP_SHELL.map((url) => cache.add(url)))));
@@ -13,17 +31,36 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'CACHE_MEMBER_SHELL') {
+    event.waitUntil(
+      caches.open(CACHE_NAME).then((cache) => Promise.allSettled(MEMBER_SHELL.map((path) => cacheDocumentWithAssets(cache, path))))
+    );
+  }
+  if (event.data?.type === 'CLEAR_MEMBER_SHELL') {
+    event.waitUntil(caches.open(CACHE_NAME).then((cache) => Promise.all(MEMBER_SHELL.map((path) => cache.delete(path)))));
+  }
+});
+
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
   if (['localhost', '127.0.0.1'].includes(self.location.hostname) && url.pathname.startsWith('/_next/')) return;
 
-  // Authenticated pages must never reuse a cached login redirect or another
-  // member's HTML. Their static assets are still cached by the handler below.
   const protectedRoute = url.pathname.startsWith('/dashboard') || url.pathname.startsWith('/admin') || url.pathname.startsWith('/book');
   if (protectedRoute && request.mode === 'navigate') {
-    event.respondWith(fetch(request));
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok && !response.redirected) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(url.pathname, copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match(url.pathname).then((cached) => cached || caches.match('/offline.html')))
+    );
     return;
   }
 

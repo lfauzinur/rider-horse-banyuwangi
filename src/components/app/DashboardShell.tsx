@@ -58,6 +58,7 @@ export default function DashboardShell({ children, role, userName, userEmail, ad
       ];
 
   async function signOut() {
+    navigator.serviceWorker?.controller?.postMessage({ type: 'CLEAR_MEMBER_SHELL' });
     if (isSupabaseConfigured()) {
       await createClient().auth.signOut();
     } else {

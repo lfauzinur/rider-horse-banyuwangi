@@ -307,8 +307,15 @@ select:focus-visible { outline: 2px solid var(--accent); }
 .beach-loader__brand { display: inline-flex; flex-direction: column; font-family: var(--font-display), Georgia, serif; font-size: 1.45rem; font-weight: 800; line-height: 1; }
 .beach-loader__brand small { margin-top: .42rem; color: #9d821b; font-family: var(--font-sans), sans-serif; font-size: .58rem; letter-spacing: .26em; text-transform: uppercase; }
 .beach-loader__scene { display: block; width: 100%; margin: 1.4rem auto 1.15rem; filter: drop-shadow(0 22px 32px rgb(22 43 35 / 13%)); }
-.beach-loader__rider { animation: beach-rider-travel 1.8s ease-in-out infinite, beach-rider-bob .42s ease-in-out infinite alternate; transform-origin: center; }
-.beach-loader__legs { animation: beach-rider-gallop .42s ease-in-out infinite alternate; transform-origin: 128px 130px; }
+.beach-loader__rider { animation: beach-rider-travel 2.25s ease-in-out infinite, beach-rider-bob .34s ease-in-out infinite alternate; transform-origin: center; }
+.beach-loader__human { animation: beach-human-ride .34s ease-in-out infinite alternate; transform-origin: 132px 96px; }
+.beach-loader__tail { animation: beach-tail-swish .68s ease-in-out infinite alternate; transform-origin: 91px 113px; }
+.beach-loader__mane { animation: beach-mane-flow .42s ease-in-out infinite alternate; transform-origin: 177px 73px; }
+.beach-loader__leg { transform-origin: 0 0; }
+.beach-loader__leg--back-one { animation: beach-leg-back-one .34s ease-in-out infinite alternate; transform-origin: 104px 130px; }
+.beach-loader__leg--back-two { animation: beach-leg-back-two .34s ease-in-out infinite alternate; transform-origin: 120px 132px; }
+.beach-loader__leg--front-one { animation: beach-leg-front-one .34s ease-in-out infinite alternate; transform-origin: 150px 131px; }
+.beach-loader__leg--front-two { animation: beach-leg-front-two .34s ease-in-out infinite alternate; transform-origin: 164px 126px; }
 .beach-loader__waves { animation: beach-waves 2.8s linear infinite; }
 .beach-loader__copy strong { display: block; font-family: var(--font-display), Georgia, serif; font-size: clamp(1.3rem, 4.5vw, 1.8rem); }
 .beach-loader__copy span { display: block; margin-top: .5rem; color: #756f64; font-size: .76rem; }
@@ -321,14 +328,17 @@ select:focus-visible { outline: 2px solid var(--accent); }
 }
 
 @keyframes beach-rider-bob {
-  from { translate: 0 0; }
-  to { translate: 0 -2px; }
+  from { translate: 0 1px; rotate: -.4deg; }
+  to { translate: 0 -3px; rotate: .5deg; }
 }
 
-@keyframes beach-rider-gallop {
-  from { rotate: -2deg; }
-  to { rotate: 3deg; }
-}
+@keyframes beach-human-ride { from { rotate: -1.5deg; translate: 0 1px; } to { rotate: 2deg; translate: 0 -2px; } }
+@keyframes beach-tail-swish { from { rotate: -7deg; } to { rotate: 9deg; } }
+@keyframes beach-mane-flow { from { rotate: -5deg; } to { rotate: 7deg; } }
+@keyframes beach-leg-back-one { from { rotate: -18deg; } to { rotate: 14deg; } }
+@keyframes beach-leg-back-two { from { rotate: 16deg; } to { rotate: -12deg; } }
+@keyframes beach-leg-front-one { from { rotate: 16deg; } to { rotate: -18deg; } }
+@keyframes beach-leg-front-two { from { rotate: -14deg; } to { rotate: 15deg; } }
 
 @keyframes beach-waves {
   from { transform: translateX(-10px); }

@@ -24,7 +24,6 @@ export default function LoginClient({ initialMode = 'login' }: { initialMode?: A
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [unconfirmedEmail, setUnconfirmedEmail] = useState('');
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
   const previewMode = !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -117,12 +116,11 @@ export default function LoginClient({ initialMode = 'login' }: { initialMode?: A
       setIsLoading(false);
       if (error) {
         const rateLimited = error.message.toLowerCase().includes('rate limit');
-        if (rateLimited) setUnconfirmedEmail(normalizedEmail);
         const invalidEmail = error.code === 'email_address_invalid' || error.message.toLowerCase().includes('email address') && error.message.toLowerCase().includes('invalid');
         setMessage({
           type: 'error',
           text: rateLimited
-            ? (locale === 'id' ? 'Akunmu sudah tercatat, tetapi email konfirmasi belum terkirim karena batas email sementara. Tunggu sebentar lalu kirim ulang konfirmasi.' : 'Your account was recorded, but the confirmation email could not be sent because of a temporary email limit. Wait a moment, then resend it.')
+            ? (locale === 'id' ? 'Terlalu banyak percobaan pendaftaran. Tunggu beberapa saat lalu coba lagi.' : 'Too many registration attempts. Wait a moment and try again.')
             : invalidEmail
               ? (locale === 'id' ? 'Alamat email ini tidak dapat digunakan. Pastikan alamatnya aktif dan benar, atau gunakan email pribadi lain.' : 'This email address cannot be used. Make sure it is active and correct, or use another personal email address.')
               : error.message,
@@ -135,8 +133,8 @@ export default function LoginClient({ initialMode = 'login' }: { initialMode?: A
         router.refresh();
         return;
       }
-      setUnconfirmedEmail(normalizedEmail);
-      setMessage({ type: 'success', text: locale === 'id' ? 'Akun berhasil dibuat. Periksa email untuk mengaktifkan akun, lalu masuk.' : 'Account created. Check your email to activate it, then sign in.' });
+      setMessage({ type: 'success', text: locale === 'id' ? 'Akun berhasil dibuat. Silakan masuk dengan akun barumu.' : 'Account created. You can now sign in with your new account.' });
+      setMode('login');
       return;
     }
 
@@ -144,11 +142,10 @@ export default function LoginClient({ initialMode = 'login' }: { initialMode?: A
     setIsLoading(false);
     if (error) {
       const emailNotConfirmed = error.message.toLowerCase().includes('email not confirmed');
-      if (emailNotConfirmed) setUnconfirmedEmail(normalizedEmail);
       setMessage({
         type: 'error',
         text: emailNotConfirmed
-          ? (locale === 'id' ? 'Akun sudah dibuat, tetapi email belum dikonfirmasi. Kirim ulang email konfirmasi lalu buka tautan yang diterima.' : 'Your account exists, but the email is not confirmed. Resend the confirmation email and open the link you receive.')
+          ? (locale === 'id' ? 'Akun lama ini belum aktif. Hubungi admin agar akun dapat diaktifkan.' : 'This older account is not active yet. Contact the admin to activate it.')
           : error.message,
       });
       return;
@@ -158,29 +155,9 @@ export default function LoginClient({ initialMode = 'login' }: { initialMode?: A
     router.refresh();
   }
 
-  async function resendConfirmation() {
-    if (!unconfirmedEmail) return;
-    setIsLoading(true);
-    const { error } = await createClient().auth.resend({
-      type: 'signup',
-      email: unconfirmedEmail,
-      options: { emailRedirectTo: `${window.location.origin}/login` },
-    });
-    setIsLoading(false);
-    if (error) {
-      const rateLimited = error.message.toLowerCase().includes('rate limit');
-      setMessage({ type: 'error', text: rateLimited
-        ? (locale === 'id' ? 'Batas pengiriman email masih aktif. Tunggu beberapa saat lalu coba lagi.' : 'The email limit is still active. Wait a while and try again.')
-        : error.message });
-      return;
-    }
-    setMessage({ type: 'success', text: locale === 'id' ? 'Email konfirmasi sudah dikirim ulang. Periksa inbox atau folder spam.' : 'Confirmation email resent. Check your inbox or spam folder.' });
-  }
-
   function switchMode(nextMode: AuthMode) {
     setMode(nextMode);
     setMessage(null);
-    setUnconfirmedEmail('');
     setPassword('');
   }
 
@@ -234,11 +211,6 @@ export default function LoginClient({ initialMode = 'login' }: { initialMode?: A
           {message && (
             <div role="status" className={`mb-5 rounded-xl border p-3.5 text-xs leading-5 ${message.type === 'error' ? 'border-red-200 bg-red-50 text-red-700' : 'border-brand-200 bg-brand-50 text-brand-700'}`}>
               <p>{message.text}</p>
-              {unconfirmedEmail && (
-                <button type="button" onClick={() => void resendConfirmation()} disabled={isLoading} className="mt-3 rounded-full border border-current px-3 py-1.5 font-extrabold disabled:opacity-50">
-                  {isLoading ? (locale === 'id' ? 'Mengirim…' : 'Sending…') : (locale === 'id' ? 'Kirim ulang email konfirmasi' : 'Resend confirmation email')}
-                </button>
-              )}
             </div>
           )}
 
