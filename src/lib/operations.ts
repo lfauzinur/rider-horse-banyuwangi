@@ -59,6 +59,31 @@ export function addOperationalBooking(trip: Trip, member: OperationalMember, inp
 }
 export function updateOperationalBooking(id: string, values: Partial<Booking>) { const next = readBookings().map((item) => item.id === id ? { ...item, ...values } : item); write(KEYS.bookings, next); }
 
+export function expireLocalBookings() {
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+  const current = readBookings();
+  const next = current.map((item) => item.status === 'pending' && new Date(item.created_at).getTime() <= cutoff ? { ...item, status: 'cancelled' as const } : item);
+  if (next.some((item, index) => item.status !== current[index]?.status)) write(KEYS.bookings, next);
+  return next;
+}
+
+export async function expireStaleBookingRecords() {
+  if (!isSupabaseConfigured()) return expireLocalBookings();
+  const { error } = await createClient().rpc('expire_stale_bookings');
+  if (error) throw error;
+}
+
+export async function cancelMemberBookingRecord(id: string) {
+  if (!isSupabaseConfigured()) {
+    const booking = readBookings().find((item) => item.id === id);
+    if (!booking || booking.status !== 'pending') throw new Error('Hanya booking yang masih menunggu yang dapat dibatalkan.');
+    updateOperationalBooking(id, { status: 'cancelled' });
+    return;
+  }
+  const { error } = await createClient().rpc('cancel_my_booking', { booking_uuid: id });
+  if (error) throw error;
+}
+
 export function addPayment(input: Omit<PaymentTransaction, 'id' | 'paid_at'>) {
   const payment: PaymentTransaction = { ...input, id: crypto.randomUUID(), paid_at: new Date().toISOString() }; write(KEYS.payments, [payment, ...readPayments()]);
   const booking = readBookings().find((item) => item.id === input.booking_id); if (booking && input.status === 'paid') { const paid = Math.min(booking.total_price, Number(booking.paid_amount || 0) + input.amount); updateOperationalBooking(booking.id, { paid_amount: paid, outstanding_amount: Math.max(0, booking.total_price - paid), payment_status: paid >= booking.total_price ? 'paid' : 'dp_paid' }); }
@@ -146,12 +171,17 @@ export async function changeFeedbackRecord(id: string, status: MemberFeedback['s
 
 export async function editMemberFeedbackRecord(id: string, values: Pick<MemberFeedback, 'type' | 'rating' | 'message'>) {
   if (!isSupabaseConfigured()) return editFeedback(id, values);
-  const { error } = await createClient().from('member_feedback').update(values).eq('id', id).eq('status', 'pending');
+  const { error } = await createClient().rpc('update_my_pending_feedback', {
+    feedback_uuid: id,
+    feedback_type: values.type,
+    feedback_rating: values.rating,
+    feedback_message: values.message,
+  });
   if (error) throw error;
 }
 
 export async function deleteMemberFeedbackRecord(id: string) {
   if (!isSupabaseConfigured()) return removeFeedback(id);
-  const { error } = await createClient().from('member_feedback').delete().eq('id', id).eq('status', 'pending');
+  const { error } = await createClient().rpc('delete_my_pending_feedback', { feedback_uuid: id });
   if (error) throw error;
 }

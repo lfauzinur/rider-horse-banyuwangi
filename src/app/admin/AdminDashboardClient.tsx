@@ -45,12 +45,12 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
   return (
-    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-brand-950/65 p-0 backdrop-blur-sm sm:items-center sm:p-5">
-      <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-[1.5rem] bg-neutral-50 p-5 shadow-2xl sm:rounded-[1.5rem] sm:p-7">
-        <div className="mb-6 flex items-center justify-between"><h2 className="font-display text-2xl font-bold">{title}</h2><button type="button" onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100" aria-label="Tutup"><X className="h-4 w-4" /></button></div>
+    <section className="mt-7 min-h-[calc(100vh-12rem)] w-full rounded-[1.5rem] border border-brand-900/8 bg-white p-5 sm:p-7 lg:p-9">
+      <div className="mx-auto w-full max-w-5xl">
+        <div className="mb-7 flex items-center justify-between gap-4 border-b border-brand-900/8 pb-5"><div><p className="text-[.6rem] font-extrabold uppercase tracking-[.16em] text-brand-600">Admin editor</p><h1 className="mt-2 font-display text-3xl font-bold">{title}</h1></div><button type="button" onClick={onClose} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-brand-900/10 bg-neutral-100" aria-label="Kembali ke daftar"><X className="h-5 w-5" /></button></div>
         {children}
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -262,6 +262,7 @@ export default function AdminDashboardClient() {
     { key: 'finance', label: 'Transaksi & Laporan', icon: WalletCards }, { key: 'referrals', label: 'Referral', icon: HandCoins },
     { key: 'feedback', label: 'Saran Member', icon: MessageSquareQuote },
   ];
+  const editorOpen = Boolean(editingTrip || editingService || editingTestimonial || editingArticle);
 
   return (
     <DashboardShell
@@ -274,16 +275,16 @@ export default function AdminDashboardClient() {
     >
       {notice && <div role="status" className="fixed right-5 top-20 z-[120] rounded-xl bg-brand-950 px-4 py-3 text-xs font-bold text-white shadow-xl">{notice}</div>}
 
-      {tab === 'overview' && <Overview memberCount={memberCount} articles={articles} bookings={bookings} revenue={revenue} onNavigate={setTab} />}
+      {!editorOpen && tab === 'overview' && <Overview memberCount={memberCount} articles={articles} bookings={bookings} revenue={revenue} onNavigate={setTab} />}
 
-      {tab === 'content' && <LandingContentManager content={content} setContent={setContent} onSave={saveContent} />}
+      {!editorOpen && tab === 'content' && <LandingContentManager content={content} setContent={setContent} onSave={saveContent} />}
 
-      {tab === 'trips' && <ResourceSection title="Katalog Trip" subtitle="Kelola seluruh paket, harga, kapasitas, dan status publik." onAdd={() => setEditingTrip({ ...emptyTrip })}>{trips.map((trip) => <ResourceCard key={trip.id} title={trip.title} meta={`${formatCurrency(trip.price)} • ${trip.duration_minutes} menit • Maks ${trip.max_capacity}`} active={trip.is_active} onEdit={() => setEditingTrip({ ...trip })} onDelete={() => void deleteTrip(trip.id)} />)}</ResourceSection>}
-      {tab === 'services' && <ResourceSection title="Program & Layanan" subtitle="Konten layanan yang tampil pada landing page." onAdd={() => setEditingService({ ...emptyService })}>{services.map((service) => <ResourceCard key={service.id} title={service.titleId} meta={`${formatCurrency(service.price)} • Urutan ${service.sort_order + 1}`} active={service.is_active} onEdit={() => setEditingService({ ...service })} onDelete={() => void deleteService(service.id)} />)}</ResourceSection>}
-      {tab === 'testimonials' && <ResourceSection title="Testimoni Rider" subtitle="Kelola social proof dan rating yang tampil di website." onAdd={() => setEditingTestimonial({ ...emptyTestimonial })}>{testimonials.map((item) => <ResourceCard key={item.id} title={item.name} meta={`${item.location} • ${item.rating}/5 • ${item.trip}`} active={item.is_active} onEdit={() => setEditingTestimonial({ ...item })} onDelete={() => void deleteTestimonial(item.id)} />)}</ResourceSection>}
-      {tab === 'articles' && <ResourceSection title="Artikel & Rider Journal" subtitle="Tulis, simpan sebagai draft, dan publikasikan artikel untuk visitor serta member." onAdd={() => setEditingArticle({ ...emptyArticle })}>{articles.map((article) => <ResourceCard key={article.id} title={article.title} meta={`${article.author} • ${article.published_at || 'Belum dijadwalkan'}`} active={article.is_published} onEdit={() => setEditingArticle({ ...article })} onDelete={() => void deleteArticle(article.id)} />)}</ResourceSection>}
+      {!editorOpen && tab === 'trips' && <ResourceSection title="Katalog Trip" subtitle="Kelola seluruh paket, harga, kapasitas, dan status publik." onAdd={() => setEditingTrip({ ...emptyTrip })}>{trips.map((trip) => <ResourceCard key={trip.id} title={trip.title} meta={`${formatCurrency(trip.price)} • ${trip.duration_minutes} menit • Maks ${trip.max_capacity}`} active={trip.is_active} onEdit={() => setEditingTrip({ ...trip })} onDelete={() => void deleteTrip(trip.id)} />)}</ResourceSection>}
+      {!editorOpen && tab === 'services' && <ResourceSection title="Program & Layanan" subtitle="Konten layanan yang tampil pada landing page." onAdd={() => setEditingService({ ...emptyService })}>{services.map((service) => <ResourceCard key={service.id} title={service.titleId} meta={`${formatCurrency(service.price)} • Urutan ${service.sort_order + 1}`} active={service.is_active} onEdit={() => setEditingService({ ...service })} onDelete={() => void deleteService(service.id)} />)}</ResourceSection>}
+      {!editorOpen && tab === 'testimonials' && <ResourceSection title="Testimoni Rider" subtitle="Kelola social proof dan rating yang tampil di website." onAdd={() => setEditingTestimonial({ ...emptyTestimonial })}>{testimonials.map((item) => <ResourceCard key={item.id} title={item.name} meta={`${item.location} • ${item.rating}/5 • ${item.trip}`} active={item.is_active} onEdit={() => setEditingTestimonial({ ...item })} onDelete={() => void deleteTestimonial(item.id)} />)}</ResourceSection>}
+      {!editorOpen && tab === 'articles' && <ResourceSection title="Artikel & Rider Journal" subtitle="Tulis, simpan sebagai draft, dan publikasikan artikel untuk visitor serta member." onAdd={() => setEditingArticle({ ...emptyArticle })}>{articles.map((article) => <ResourceCard key={article.id} title={article.title} meta={`${article.author} • ${article.published_at || 'Belum dijadwalkan'}`} active={article.is_published} onEdit={() => setEditingArticle({ ...article })} onDelete={() => void deleteArticle(article.id)} />)}</ResourceSection>}
 
-      {(['members', 'bookings', 'finance', 'referrals', 'feedback'] as AdminTab[]).includes(tab) && <AdminOperations view={tab as 'members' | 'bookings' | 'finance' | 'referrals' | 'feedback'} trips={trips} services={services} onBookingsChange={setBookings} onMembersChange={setMemberCount} />}
+      {!editorOpen && (['members', 'bookings', 'finance', 'referrals', 'feedback'] as AdminTab[]).includes(tab) && <AdminOperations view={tab as 'members' | 'bookings' | 'finance' | 'referrals' | 'feedback'} trips={trips} services={services} onBookingsChange={setBookings} onMembersChange={setMemberCount} />}
 
       {editingTrip && <TripModal trip={editingTrip} setTrip={setEditingTrip} onClose={() => setEditingTrip(null)} onSave={saveTrip} />}
       {editingService && <ServiceModal service={editingService} setService={setEditingService} onClose={() => setEditingService(null)} onSave={saveService} />}

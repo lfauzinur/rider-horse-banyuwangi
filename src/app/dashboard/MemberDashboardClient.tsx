@@ -11,6 +11,7 @@ import { useCatalog } from '@/lib/catalog-context';
 import { createClient } from '@/lib/supabase/client';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { previewBookings, readLocalBookings } from '@/lib/member-bookings';
+import { expireStaleBookingRecords } from '@/lib/operations';
 import type { Booking } from '@/types';
 import { useLanguage } from '@/lib/i18n/context';
 import { localizeTrip } from '@/lib/localized-content';
@@ -34,6 +35,7 @@ export default function MemberDashboardClient() {
 
   const loadBookings = useCallback(async () => {
     if (!configured || !user) return;
+    try { await expireStaleBookingRecords(); } catch { /* Scheduled expiry will retry in the database. */ }
     const { data } = await createClient().from('bookings').select('*, trip:trips(*)').eq('user_id', user.id).order('booking_date', { ascending: false });
     if (data) setBookings(data as Booking[]);
   }, [configured, user]);
@@ -111,10 +113,10 @@ export default function MemberDashboardClient() {
 
       <section className="relative overflow-hidden rounded-[1.75rem] bg-brand-950 p-6 text-white sm:p-8">
         <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-accent-400/10 blur-3xl" />
-        <div className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
+        <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div>
             <p className="text-[0.62rem] font-extrabold uppercase tracking-[0.17em] text-accent-300">Member experience</p>
-            <h1 className="mt-3 max-w-xl font-display text-3xl font-bold leading-tight sm:text-5xl">{l('Petualangan berikutnya menantimu.', 'Your next adventure awaits.')}</h1>
+            <h1 className="mt-3 max-w-3xl font-display text-[clamp(2.35rem,3.65vw,3.75rem)] font-bold leading-[1.02] tracking-[-.025em]">{l('Petualangan berikutnya menantimu.', 'Your next adventure awaits.')}</h1>
             <p className="mt-4 max-w-xl text-sm leading-7 text-white/55">{l('Pilih trip, pesan jadwal, dan pantau seluruh perjalananmu langsung dari satu aplikasi.', 'Choose a trip, reserve a schedule, and track your entire journey from one app.')}</p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -173,7 +175,7 @@ export default function MemberDashboardClient() {
                     <Image src={trip?.cover_image_url || '/images/hero-banner.png'} alt={trip?.title || 'Trip'} fill sizes="112px" className="object-cover" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2"><h3 className="font-display text-lg font-bold">{trip?.title || 'Riding Trip'}</h3><span className="rounded-full bg-brand-100 px-2.5 py-1 text-[0.58rem] font-extrabold uppercase text-brand-700">{booking.status}</span></div>
+                    <div className="flex flex-wrap items-center gap-2"><h3 className="font-display text-lg font-bold">{trip?.title || 'Riding Trip'}</h3><span className="rounded-full bg-brand-100 px-2.5 py-1 text-[0.58rem] font-extrabold uppercase text-brand-700">{{ pending: l('Menunggu', 'Pending'), confirmed: l('Dikonfirmasi', 'Confirmed'), completed: l('Selesai', 'Completed'), cancelled: l('Dibatalkan', 'Cancelled') }[booking.status]}</span></div>
                     <div className="mt-2 flex flex-wrap gap-4 text-xs text-neutral-500"><span className="flex items-center gap-1.5"><CalendarCheck2 className="h-3.5 w-3.5" />{formatDate(booking.booking_date, locale)}</span><span className="flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5" />{booking.time_slot} WIB</span></div>
                   </div>
                   <p className="font-display text-lg font-bold text-brand-800">{formatCurrency(booking.total_price)}</p>

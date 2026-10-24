@@ -29,9 +29,9 @@ export default function Hero() {
               Banyuwangi, East Java
             </div>
 
-            <h1 className="max-w-[12ch] font-display text-[clamp(3.15rem,8vw,7.2rem)] font-bold leading-[0.91] tracking-[-0.055em] text-white animate-fade-in-up animation-delay-100">
+            <h1 className="max-w-[13ch] font-display text-[clamp(3.15rem,7.6vw,7.2rem)] font-bold leading-[0.96] tracking-[-0.05em] text-white animate-fade-in-up animation-delay-100">
               {lines[0]}
-              <span className="block italic text-accent-300">{lines[1]}</span>
+              <span className="mt-[.1em] block leading-[.96] italic text-accent-300">{lines[1]}</span>
             </h1>
 
             <div className="mt-8 flex max-w-2xl flex-col gap-6 border-l border-accent-300/60 pl-5 sm:flex-row sm:items-end sm:justify-between animate-fade-in-up animation-delay-200">
